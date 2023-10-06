@@ -12,3 +12,16 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+
+# Added by cargo
+
+/target
+/Cargo.lock
+
+# IntelliJ Shit
+.idea/
+database-reflection.iml
+
+# VSCode Shit
+.vscode/
