@@ -1,10 +1,13 @@
 use std::collections::{HashMap};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+#[allow(dead_code)]
 const METADATA_CHARSET: &str = "charset";
+#[allow(dead_code)]
 const METADATA_COLLATION: &str = "collation";
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Datatype<'a> {
     Tinyint(u32),
     Int(u32),
@@ -35,17 +38,19 @@ impl Default for Datatype<'_> {
     }
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub enum DefaultValue {
     #[default]
     Null,
     Value(Value)
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'a> {
     name: String,
+    #[serde(borrow)]
     tables: HashMap<&'a str, Table<'a>>,
+    #[serde(borrow)]
     constraints: HashMap<&'a str, Constraint<'a>>,
     metadata: HashMap<String, String>
 }
@@ -78,7 +83,7 @@ impl <'a>Database<'a> {
 
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table<'a> {
     name: &'a str,
     columns: HashMap<&'a str, Column<'a>>,
@@ -87,7 +92,7 @@ pub struct Table<'a> {
     metadata: HashMap<String, String>
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Column<'a> {
     database: &'a str,
     table: &'a str,
@@ -96,17 +101,18 @@ pub struct Column<'a> {
     default: Option<DefaultValue>,
 }
 
-#[derive(Clone, Copy, Default, Debug)]
+#[derive(Clone, Copy, Default, Debug, Serialize, Deserialize)]
 pub struct Index<'a> {
     name: &'a str,
     column: &'a str
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Constraint<'a> {
     name: &'a str,
     column: &'a str,
-    foreign: &'a Column<'a>,
+    #[serde(borrow)]
+    foreign: Column<'a>,
     metadata: HashMap<String, String>
 }
 
