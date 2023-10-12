@@ -8,7 +8,7 @@ const METADATA_CHARSET: &str = "charset";
 #[allow(dead_code)]
 const METADATA_COLLATION: &str = "collation";
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Datatype {
     Tinyint(u32),
     Int(u32),
@@ -39,7 +39,7 @@ impl Default for Datatype {
     }
 }
 
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DefaultValue {
     #[default]
     Null,
@@ -69,7 +69,7 @@ impl Database {
         self.name.as_str()
     }
 
-    pub fn set_meta(mut self, meta_key: impl ToString, meta_value: impl ToString) -> Database {
+    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Database {
         self.metadata.insert(meta_key.to_string(), meta_value.to_string());
 
         self
@@ -79,7 +79,7 @@ impl Database {
         self.metadata.get(key).cloned()
     }
 
-    pub fn set_table(mut self, table: Table) -> Database {
+    pub fn set_table(&mut self, table: Table) -> &mut Database {
         self.tables.insert(table.name.clone(), table);
 
         self
@@ -109,9 +109,13 @@ impl Table {
             ..Default::default()
         }
     }
+
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
 }
 
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Column {
     database: String,
     table: String,
@@ -120,18 +124,52 @@ pub struct Column {
     default: Option<DefaultValue>,
 }
 
+impl Column {
+    pub fn new(database: impl ToString, table: impl ToString, name: impl ToString, datatype: Datatype) -> Column {
+        Column {
+            database: database.to_string(),
+            table: table.to_string(),
+            name: name.to_string(),
+            datatype,
+            ..Default::default()
+        }
+    }
+
+    pub fn set_default(&mut self, value: Option<DefaultValue>) -> &mut Column{
+        self.default = value;
+        self
+    }
+
+    pub fn database(&self) -> &str {
+        self.database.as_str()
+    }
+
+    pub fn table(&self) -> &str {
+        self.table.as_str()
+    }
+
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn default(&self) -> Option<DefaultValue> {
+        self.default.clone()
+    }
+
+}
+
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Index {
     name: String,
-    column: String,
+    column: Column,
     unique: bool
 }
 
 impl Index {
-    pub fn new(name: impl ToString, column: impl ToString, unique: bool) -> Self {
+    pub fn new(name: impl ToString, column: Column, unique: bool) -> Self {
         Index {
             name: name.to_string(),
-            column: column.to_string(),
+            column,
             unique
         }
     }
@@ -140,8 +178,8 @@ impl Index {
         self.name.as_str()
     }
 
-    pub fn column(&self) -> &str {
-        self.column.as_str()
+    pub fn column(&self) -> &Column {
+        &self.column
     }
 
     pub fn unique(&self) -> bool {
@@ -158,7 +196,7 @@ pub struct Constraint {
 }
 
 impl Constraint {
-    pub fn new(name: impl ToString, local: Column, foreign: Column) -> Self {
+    pub fn new(name: impl ToString, local: Column, foreign: Column) -> Constraint {
         Constraint {
             name: name.to_string(),
             local,
@@ -171,7 +209,15 @@ impl Constraint {
         self.name.as_str()
     }
 
-    pub fn set_meta(mut self, meta_key: impl ToString, meta_value: impl ToString) -> Constraint {
+    pub fn local(&self) -> &Column {
+        &self.local
+    }
+
+    pub fn foreign(&self) -> &Column {
+        &self.local
+    }
+
+    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Constraint {
         self.metadata.insert(meta_key.to_string(), meta_value.to_string());
 
         self
@@ -191,7 +237,9 @@ mod tests {
     fn construction() {
         let db_name = "test";
 
-        let mut db = Database::new(db_name).set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        let mut db = Database::new(db_name);
+
+        db.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         assert_eq!(db.name(), db_name);
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
@@ -200,17 +248,23 @@ mod tests {
 
         let table = Table::new("test");
 
-        db = db.set_table(table);
+        let test_id = Column::new(db.name(), table.name(), "test_id", Datatype::Int(10));
+
+        let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
+
+        db.set_table(table);
 
         assert!(db.table("test").is_some());
         assert_eq!(db.table("test").unwrap().name, "test");
 
-        let index = Index::new("index_1", "test_id", false);
+        let index = Index::new("index_1", test_id.clone(), false);
 
         assert_eq!(index.name(), "index_1");
-        assert_eq!(index.column(), "test_id");
+        assert_eq!(index.column(), &test_id);
 
         println!("{}", serde_json::to_string(&db).unwrap());
+
+        let fk = Constraint::new("fk_1", test_id, fk_test_id);
 
     }
 }
