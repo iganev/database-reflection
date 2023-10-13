@@ -115,6 +115,46 @@ impl<'n> Table<'n> {
     pub fn name(&self) -> &str {
         self.name
     }
+
+    pub fn set_column(&mut self, column: Column<'n>) -> &mut Table<'n> {
+        self.columns.insert(column.name.to_string(), column);
+
+        self
+    }
+
+    pub fn column(&self, key: &str) -> Option<&Column> {
+        self.columns.get(key)
+    }
+
+    pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
+        self.constraints.insert(constraint.name.to_string(), constraint);
+
+        self
+    }
+
+    pub fn constraint(&self, key: &str) -> Option<&Constraint> {
+        self.constraints.get(key)
+    }
+
+    pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
+        self.indexes.insert(index.name.to_string(), index);
+
+        self
+    }
+
+    pub fn index(&self, key: &str) -> Option<&Index> {
+        self.indexes.get(key)
+    }
+
+    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Table<'n> {
+        self.metadata.insert(meta_key.to_string(), meta_value.to_string());
+
+        self
+    }
+
+    pub fn meta(&self, key: &str) -> Option<String> {
+        self.metadata.get(key).cloned()
+    }
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -239,7 +279,6 @@ mod tests {
     #[test]
     fn construction() {
         let db_name = "test";
-
         let mut db = Database::new(db_name);
 
         db.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
@@ -249,19 +288,23 @@ mod tests {
         assert_eq!(db.meta(METADATA_COLLATION), Some(String::from("utf8mb4_unicode_ci")));
         assert_eq!(db.meta("shit"), None);
 
-        let table = Table::new("test");
-
-        let test_id = Column::new(db.name(), table.name(), "test_id", Datatype::Int(10));
-        let index = Index::new("index_1", test_id.clone(), false);
-
-        let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
-
-        let fk = Constraint::new("fk_1", test_id.clone(), fk_test_id);
+        let table_name = "test";
+        let mut table = Table::new(table_name);
+        table.set_column(Column::new(db_name, table_name, "test_id", Datatype::Int(10)))
+            .set_column(Column::new(db_name, table_name, "first_name", Datatype::Varchar(255)))
+            .set_column(Column::new(db_name, table_name, "last_name", Datatype::Varchar(255)))
+            .set_column(Column::new(db_name, table_name, "is_enabled", Datatype::Tinyint(1)));
 
         db.set_table(table);
 
         assert!(db.table("test").is_some());
         assert_eq!(db.table("test").unwrap().name, "test");
+
+        // let index = Index::new("index_1", test_id.clone(), false);
+
+        // let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
+
+        // let fk = Constraint::new("fk_1", test_id.clone(), fk_test_id);
 
         // assert_eq!(index.name(), "index_1");
         // assert_eq!(index.column(), &test_id.clone());
