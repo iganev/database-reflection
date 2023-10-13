@@ -295,12 +295,14 @@ mod tests {
             .set_column(Column::new(db_name, table_name, "last_name", Datatype::Varchar(255)))
             .set_column(Column::new(db_name, table_name, "is_enabled", Datatype::Tinyint(1)));
 
+        // table.set_index(Index::new("index_1", table.column("test_id").unwrap().clone(), false));
+
         db.set_table(table);
 
         assert!(db.table("test").is_some());
         assert_eq!(db.table("test").unwrap().name, "test");
 
-        // let index = Index::new("index_1", test_id.clone(), false);
+
 
         // let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
 
