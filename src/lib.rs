@@ -9,6 +9,7 @@ const METADATA_CHARSET: &str = "charset";
 const METADATA_COLLATION: &str = "collation";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Datatype {
     Tinyint(u32),
     Int(u32),
@@ -40,6 +41,7 @@ impl Default for Datatype {
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum DefaultValue {
     #[default]
     Null,
@@ -48,28 +50,28 @@ pub enum DefaultValue {
 
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Database {
-    name: String,
+pub struct Database<'n> {
+    name: &'n str,
     #[serde_as(as = "Vec<(_, _)>")]
-    tables: HashMap<String, Table>,
+    tables: HashMap<String, Table<'n>>,
     #[serde_as(as = "Vec<(_, _)>")]
     constraints: HashMap<String, Constraint>,
     metadata: HashMap<String, String>
 }
 
-impl Database {
-    pub fn new(name: impl ToString) -> Database {
+impl<'n> Database<'n> {
+    pub fn new(name: &'n str) -> Database {
         Database {
-            name: name.to_string(),
+            name,
             ..Default::default()
         }
     }
 
     pub fn name(&self) -> &str {
-        self.name.as_str()
+        self.name
     }
 
-    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Database {
+    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Database<'n> {
         self.metadata.insert(meta_key.to_string(), meta_value.to_string());
 
         self
@@ -79,8 +81,8 @@ impl Database {
         self.metadata.get(key).cloned()
     }
 
-    pub fn set_table(&mut self, table: Table) -> &mut Database {
-        self.tables.insert(table.name.clone(), table);
+    pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
+        self.tables.insert(table.name.to_string(), table);
 
         self
     }
@@ -93,8 +95,8 @@ impl Database {
 
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Table {
-    name: String,
+pub struct Table<'n> {
+    name: &'n str,
     #[serde_as(as = "Vec<(_, _)>")]
     columns: HashMap<String, Column>,
     constraints: HashMap<String, Constraint>,
@@ -102,16 +104,16 @@ pub struct Table {
     metadata: HashMap<String, String>
 }
 
-impl Table {
-    pub fn new(name: impl ToString) -> Table {
+impl<'n> Table<'n> {
+    pub fn new(name: &'n str) -> Table {
         Table {
-            name: name.to_string(),
+            name,
             ..Default::default()
         }
     }
 
     pub fn name(&self) -> &str {
-        self.name.as_str()
+        self.name
     }
 }
 
@@ -121,6 +123,7 @@ pub struct Column {
     table: String,
     name: String,
     datatype: Datatype,
+    #[serde(skip_serializing_if = "Option::is_none")]
     default: Option<DefaultValue>,
 }
 
