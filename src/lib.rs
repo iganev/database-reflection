@@ -213,12 +213,12 @@ impl<'n> Column<'n> {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index<'n> {
     name: &'n str,
-    column: Column<'n>,
+    column: &'n str,
     unique: bool,
 }
 
 impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: Column<'n>, unique: bool) -> Self {
+    pub fn new(name: &'n str, column: &'n str, unique: bool) -> Self {
         Index {
             name,
             column,
@@ -230,8 +230,8 @@ impl<'n> Index<'n> {
         self.name
     }
 
-    pub fn column(&self) -> &Column<'n> {
-        &self.column
+    pub fn column(&self) -> &str {
+        self.column
     }
 
     pub fn unique(&self) -> bool {
@@ -242,17 +242,19 @@ impl<'n> Index<'n> {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Constraint<'n> {
     name: &'n str,
-    local: Column<'n>,
-    foreign: Column<'n>,
+    local: &'n str,
+    foreign_table: &'n str,
+    foreign_column: &'n str,
     metadata: HashMap<String, String>,
 }
 
 impl<'n> Constraint<'n> {
-    pub fn new(name: &'n str, local: Column<'n>, foreign: Column<'n>) -> Self {
+    pub fn new(name: &'n str, local: &'n str, foreign: (&'n str, &'n str)) -> Self {
         Constraint {
             name,
             local,
-            foreign,
+            foreign_table: foreign.0,
+            foreign_column: foreign.1,
             ..Default::default()
         }
     }
@@ -261,12 +263,12 @@ impl<'n> Constraint<'n> {
         self.name
     }
 
-    pub fn local(&self) -> &Column {
-        &self.local
+    pub fn local(&self) -> &str {
+        self.local
     }
 
-    pub fn foreign(&self) -> &Column {
-        &self.foreign
+    pub fn foreign(&self) -> (&str, &str) {
+        (self.foreign_table, self.foreign_column)
     }
 
     pub fn set_meta(
@@ -333,19 +335,19 @@ mod tests {
                 Datatype::Tinyint(1),
             ));
 
-        // table.set_index(Index::new("index_1", table.column("test_id").unwrap().clone(), false));
+        table.set_index(Index::new("index_1", "test_id", false));
+
+        let fk = Constraint::new("fk_1", "test_id", ("children", "test_id"));
+
+        table.set_constraint(fk);
 
         db.set_table(table);
 
         assert!(db.table("test").is_some());
         assert_eq!(db.table("test").unwrap().name, "test");
-
-        // let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
-
-        // let fk = Constraint::new("fk_1", test_id.clone(), fk_test_id);
-
-        // assert_eq!(index.name(), "index_1");
-        // assert_eq!(index.column(), &test_id.clone());
+        assert_eq!(db.table("test").unwrap().index("index_1").unwrap().name(), "index_1");
+        assert_eq!(db.table("test").unwrap().constraint("fk_1").unwrap().local(), "test_id");
+        assert_eq!(db.table("test").unwrap().constraint("fk_1").unwrap().foreign().1, "test_id");
 
         println!("{}", serde_json::to_string(&db).unwrap());
     }
