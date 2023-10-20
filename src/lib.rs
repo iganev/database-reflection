@@ -1,7 +1,7 @@
-use std::collections::{HashMap};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
+use std::collections::HashMap;
 
 #[allow(dead_code)]
 const METADATA_CHARSET: &str = "charset";
@@ -31,7 +31,7 @@ pub enum Datatype {
 
     Enum(Vec<String>),
     Set(Vec<String>),
-    Json(String)
+    Json(String),
 }
 
 impl Default for Datatype {
@@ -45,7 +45,7 @@ impl Default for Datatype {
 pub enum DefaultValue {
     #[default]
     Null,
-    Value(Value)
+    Value(Value),
 }
 
 #[serde_as]
@@ -56,7 +56,7 @@ pub struct Database<'n> {
     tables: HashMap<String, Table<'n>>,
     #[serde_as(as = "Vec<(_, _)>")]
     constraints: HashMap<String, Constraint<'n>>,
-    metadata: HashMap<String, String>
+    metadata: HashMap<String, String>,
 }
 
 impl<'n> Database<'n> {
@@ -71,8 +71,13 @@ impl<'n> Database<'n> {
         self.name
     }
 
-    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Database<'n> {
-        self.metadata.insert(meta_key.to_string(), meta_value.to_string());
+    pub fn set_meta(
+        &mut self,
+        meta_key: impl ToString,
+        meta_value: impl ToString,
+    ) -> &mut Database<'n> {
+        self.metadata
+            .insert(meta_key.to_string(), meta_value.to_string());
 
         self
     }
@@ -90,7 +95,6 @@ impl<'n> Database<'n> {
     pub fn table(&self, key: &str) -> Option<&Table> {
         self.tables.get(key)
     }
-
 }
 
 #[serde_as]
@@ -101,7 +105,7 @@ pub struct Table<'n> {
     columns: HashMap<String, Column<'n>>,
     constraints: HashMap<String, Constraint<'n>>,
     indexes: HashMap<String, Index<'n>>,
-    metadata: HashMap<String, String>
+    metadata: HashMap<String, String>,
 }
 
 impl<'n> Table<'n> {
@@ -127,7 +131,8 @@ impl<'n> Table<'n> {
     }
 
     pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
-        self.constraints.insert(constraint.name.to_string(), constraint);
+        self.constraints
+            .insert(constraint.name.to_string(), constraint);
 
         self
     }
@@ -146,8 +151,13 @@ impl<'n> Table<'n> {
         self.indexes.get(key)
     }
 
-    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Table<'n> {
-        self.metadata.insert(meta_key.to_string(), meta_value.to_string());
+    pub fn set_meta(
+        &mut self,
+        meta_key: impl ToString,
+        meta_value: impl ToString,
+    ) -> &mut Table<'n> {
+        self.metadata
+            .insert(meta_key.to_string(), meta_value.to_string());
 
         self
     }
@@ -198,14 +208,13 @@ impl<'n> Column<'n> {
     pub fn default(&self) -> Option<DefaultValue> {
         self.default.clone()
     }
-
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index<'n> {
     name: &'n str,
     column: Column<'n>,
-    unique: bool
+    unique: bool,
 }
 
 impl<'n> Index<'n> {
@@ -213,7 +222,7 @@ impl<'n> Index<'n> {
         Index {
             name,
             column,
-            unique
+            unique,
         }
     }
 
@@ -235,7 +244,7 @@ pub struct Constraint<'n> {
     name: &'n str,
     local: Column<'n>,
     foreign: Column<'n>,
-    metadata: HashMap<String, String>
+    metadata: HashMap<String, String>,
 }
 
 impl<'n> Constraint<'n> {
@@ -260,8 +269,13 @@ impl<'n> Constraint<'n> {
         &self.foreign
     }
 
-    pub fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Constraint<'n> {
-        self.metadata.insert(meta_key.to_string(), meta_value.to_string());
+    pub fn set_meta(
+        &mut self,
+        meta_key: impl ToString,
+        meta_value: impl ToString,
+    ) -> &mut Constraint<'n> {
+        self.metadata
+            .insert(meta_key.to_string(), meta_value.to_string());
 
         self
     }
@@ -269,7 +283,6 @@ impl<'n> Constraint<'n> {
     pub fn meta(&self, key: &str) -> Option<String> {
         self.metadata.get(key).cloned()
     }
-
 }
 
 #[cfg(test)]
@@ -281,19 +294,44 @@ mod tests {
         let db_name = "test";
         let mut db = Database::new(db_name);
 
-        db.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        db.set_meta(METADATA_CHARSET, "utf8mb4")
+            .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         assert_eq!(db.name(), db_name);
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
-        assert_eq!(db.meta(METADATA_COLLATION), Some(String::from("utf8mb4_unicode_ci")));
+        assert_eq!(
+            db.meta(METADATA_COLLATION),
+            Some(String::from("utf8mb4_unicode_ci"))
+        );
         assert_eq!(db.meta("shit"), None);
 
         let table_name = "test";
         let mut table = Table::new(table_name);
-        table.set_column(Column::new(db_name, table_name, "test_id", Datatype::Int(10)))
-            .set_column(Column::new(db_name, table_name, "first_name", Datatype::Varchar(255)))
-            .set_column(Column::new(db_name, table_name, "last_name", Datatype::Varchar(255)))
-            .set_column(Column::new(db_name, table_name, "is_enabled", Datatype::Tinyint(1)));
+        table
+            .set_column(Column::new(
+                db_name,
+                table_name,
+                "test_id",
+                Datatype::Int(10),
+            ))
+            .set_column(Column::new(
+                db_name,
+                table_name,
+                "first_name",
+                Datatype::Varchar(255),
+            ))
+            .set_column(Column::new(
+                db_name,
+                table_name,
+                "last_name",
+                Datatype::Varchar(255),
+            ))
+            .set_column(Column::new(
+                db_name,
+                table_name,
+                "is_enabled",
+                Datatype::Tinyint(1),
+            ));
 
         // table.set_index(Index::new("index_1", table.column("test_id").unwrap().clone(), false));
 
@@ -301,8 +339,6 @@ mod tests {
 
         assert!(db.table("test").is_some());
         assert_eq!(db.table("test").unwrap().name, "test");
-
-
 
         // let fk_test_id = Column::new(db.name(), "children", "test_id", Datatype::Int(10));
 
@@ -312,8 +348,5 @@ mod tests {
         // assert_eq!(index.column(), &test_id.clone());
 
         println!("{}", serde_json::to_string(&db).unwrap());
-
-
-
     }
 }
