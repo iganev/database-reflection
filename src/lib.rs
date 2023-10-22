@@ -7,6 +7,12 @@ use std::collections::HashMap;
 const METADATA_CHARSET: &str = "charset";
 #[allow(dead_code)]
 const METADATA_COLLATION: &str = "collation";
+#[allow(dead_code)]
+const METADATA_UNSIGNED: &str = "unsigned";
+#[allow(dead_code)]
+const METADATA_NULLABLE: &str = "nullable";
+#[allow(dead_code)]
+const METADATA_ON_UPDATE: &str = "on_update";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -175,6 +181,7 @@ pub struct Column<'n> {
     datatype: Datatype,
     #[serde(skip_serializing_if = "Option::is_none")]
     default: Option<DefaultValue>,
+    metadata: HashMap<String, String>,
 }
 
 impl<'n> Column<'n> {
@@ -207,6 +214,21 @@ impl<'n> Column<'n> {
 
     pub fn default(&self) -> Option<DefaultValue> {
         self.default.clone()
+    }
+
+    pub fn set_meta(
+        &mut self,
+        meta_key: impl ToString,
+        meta_value: impl ToString,
+    ) -> &mut Column<'n> {
+        self.metadata
+            .insert(meta_key.to_string(), meta_value.to_string());
+
+        self
+    }
+
+    pub fn meta(&self, key: &str) -> Option<String> {
+        self.metadata.get(key).cloned()
     }
 }
 
@@ -293,11 +315,144 @@ mod tests {
 
     #[test]
     fn construction() {
+
+        // CREATE TABLE `clients` (
+        // `client_id` int(10) UNSIGNED NOT NULL,
+        // `email` varchar(255) NOT NULL,
+        // `password` varchar(64) NOT NULL,
+        // `phone` varchar(45) DEFAULT NULL,
+        // `first_name` varchar(45) DEFAULT NULL,
+        // `last_name` varchar(45) DEFAULT NULL,
+        // `is_email_verified` tinyint(1) UNSIGNED NOT NULL DEFAULT 0,
+        // `email_verification_code` varchar(64) DEFAULT NULL,
+        // `password_reset_code` varchar(64) DEFAULT NULL,
+        // `last_access` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        // `created` timestamp NOT NULL DEFAULT current_timestamp()
+        // ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        //
+        // ALTER TABLE `clients`
+        // ADD PRIMARY KEY (`client_id`),
+        // ADD UNIQUE KEY `email_UNIQUE` (`email`);
+        //
+        // CREATE TABLE `client_tokens` (
+        // `client_token_id` int(10) UNSIGNED NOT NULL,
+        // `client_id` int(10) UNSIGNED NOT NULL,
+        // `auth_token` varchar(64) NOT NULL,
+        // `auth_token_expiration_date` timestamp NOT NULL,
+        // `remote_address` varchar(64) DEFAULT NULL,
+        // `user_agent` varchar(255) DEFAULT NULL,
+        // `last_access` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        // `created` timestamp NOT NULL DEFAULT current_timestamp()
+        // ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        //
+        // ALTER TABLE `client_tokens`
+        // ADD PRIMARY KEY (`client_token_id`),
+        // ADD KEY `fk_client_tokens_1_idx` (`client_id`);
+        //
+        // ALTER TABLE `client_tokens`
+        // ADD CONSTRAINT `fk_client_tokens_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+        //
+        // CREATE TABLE `products` (
+        // `product_id` int(10) UNSIGNED NOT NULL,
+        // `name` varchar(255) DEFAULT NULL,
+        // `is_enabled` tinyint(1) UNSIGNED NOT NULL DEFAULT 1
+        // ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        //
+        // ALTER TABLE `products`
+        // ADD PRIMARY KEY (`product_id`);
+        //
+        // CREATE TABLE `client_products` (
+        // `client_product_id` int(10) UNSIGNED NOT NULL,
+        // `client_id` int(10) UNSIGNED NOT NULL,
+        // `product_id` int(10) UNSIGNED NOT NULL
+        // ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        //
+        // ALTER TABLE `client_products`
+        // ADD PRIMARY KEY (`client_product_id`),
+        // ADD KEY `fk_client_products_1_idx` (`client_id`),
+        // ADD KEY `fk_client_products_2_idx` (`product_id`);
+        //
+        // ALTER TABLE `client_products`
+        // ADD CONSTRAINT `fk_client_products_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+        // ADD CONSTRAINT `fk_client_products_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
         let db_name = "test";
         let mut db = Database::new(db_name);
 
         db.set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
+        let clients_table_name = "clients";
+        let mut clients_table = Table::new(clients_table_name);
+        clients_table
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "client_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "email",
+                Datatype::Varchar(255),
+            ))
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "password",
+                Datatype::Varchar(64),
+            ))
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "phone",
+                Datatype::Varchar(45),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "first_name",
+                Datatype::Varchar(45),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "last_name",
+                Datatype::Varchar(45),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "is_email_verified",
+                Datatype::Tinyint(1),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).set_default(Some(DefaultValue::Value(serde_json::Value::from(0)))).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "email_verification_code",
+                Datatype::Varchar(64),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "password_reset_code",
+                Datatype::Varchar(64),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "last_access",
+                Datatype::Timestamp,
+            ).set_meta(METADATA_ON_UPDATE, "current_timestamp()").set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "created",
+                Datatype::Timestamp,
+            ).set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned());
+
+
 
         assert_eq!(db.name(), db_name);
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
