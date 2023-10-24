@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
+use indexmap::IndexMap;
 
 #[allow(dead_code)]
 const METADATA_CHARSET: &str = "charset";
@@ -58,9 +59,7 @@ pub enum DefaultValue {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
     name: &'n str,
-    #[serde_as(as = "Vec<(_, _)>")]
-    tables: HashMap<String, Table<'n>>,
-    #[serde_as(as = "Vec<(_, _)>")]
+    tables: IndexMap<String, Table<'n>>,
     constraints: HashMap<String, Constraint<'n>>,
     metadata: HashMap<String, String>,
 }
@@ -107,10 +106,9 @@ impl<'n> Database<'n> {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table<'n> {
     name: &'n str,
-    #[serde_as(as = "Vec<(_, _)>")]
-    columns: HashMap<String, Column<'n>>,
+    columns: IndexMap<String, Column<'n>>,
     constraints: HashMap<String, Constraint<'n>>,
-    indexes: HashMap<String, Index<'n>>,
+    indexes: IndexMap<String, Index<'n>>,
     metadata: HashMap<String, String>,
 }
 
@@ -236,14 +234,16 @@ impl<'n> Column<'n> {
 pub struct Index<'n> {
     name: &'n str,
     column: &'n str,
+    primary: bool,
     unique: bool,
 }
 
 impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: &'n str, unique: bool) -> Self {
+    pub fn new(name: &'n str, column: &'n str, primary:bool, unique: bool) -> Self {
         Index {
             name,
             column,
+            primary,
             unique,
         }
     }
@@ -255,6 +255,8 @@ impl<'n> Index<'n> {
     pub fn column(&self) -> &str {
         self.column
     }
+
+    pub fn primary(&self) -> bool { self.primary }
 
     pub fn unique(&self) -> bool {
         self.unique
@@ -452,6 +454,11 @@ mod tests {
                 Datatype::Timestamp,
             ).set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned());
 
+        clients_table.set_index(Index::new("PRIMARY", "client_id", true, true));
+        clients_table.set_index(Index::new("email_UNIQUE", "email", false, true));
+        clients_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
+        db.set_table(clients_table);
 
 
         assert_eq!(db.name(), db_name);
@@ -490,7 +497,7 @@ mod tests {
                 Datatype::Tinyint(1),
             ));
 
-        table.set_index(Index::new("index_1", "test_id", false));
+        table.set_index(Index::new("index_1", "test_id", false, false));
 
         let fk = Constraint::new("fk_1", "test_id", ("children", "test_id"));
 
