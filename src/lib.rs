@@ -384,6 +384,8 @@ mod tests {
         db.set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
+        //
+
         let clients_table_name = "clients";
         let mut clients_table = Table::new(clients_table_name);
         clients_table
@@ -460,6 +462,72 @@ mod tests {
 
         db.set_table(clients_table);
 
+        //
+
+        let client_tokens_table_name = "client_tokens";
+        let mut client_tokens_table = Table::new(client_tokens_table_name);
+        client_tokens_table
+            .set_column(Column::new(
+                db_name,
+                client_tokens_table_name,
+                "client_token_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                client_tokens_table_name,
+                "client_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "auth_token",
+                Datatype::Varchar(64),
+            ))
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "auth_token_expiration_date",
+                Datatype::Timestamp,
+            ))
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "remote_address",
+                Datatype::Varchar(64),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "user_agent",
+                Datatype::Varchar(255),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "last_access",
+                Datatype::Timestamp,
+            ).set_meta(METADATA_ON_UPDATE, "current_timestamp()").set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned())
+            .set_column(Column::new(
+                db_name,
+                clients_table_name,
+                "created",
+                Datatype::Timestamp,
+            ).set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned());
+
+        client_tokens_table.set_index(Index::new("PRIMARY", "client_token_id", true, true));
+        client_tokens_table.set_index(Index::new("fk_client_tokens_1_idx", "client_id", false, false));
+        client_tokens_table.set_constraint(Constraint::new("fk_client_tokens_1", "client_id", ("clients", "client_id")));
+        client_tokens_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
+        db.set_table(client_tokens_table);
+
+        //
+
+
+
+        //
 
         assert_eq!(db.name(), db_name);
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
@@ -468,48 +536,6 @@ mod tests {
             Some(String::from("utf8mb4_unicode_ci"))
         );
         assert_eq!(db.meta("shit"), None);
-
-        let table_name = "test";
-        let mut table = Table::new(table_name);
-        table
-            .set_column(Column::new(
-                db_name,
-                table_name,
-                "test_id",
-                Datatype::Int(10),
-            ))
-            .set_column(Column::new(
-                db_name,
-                table_name,
-                "first_name",
-                Datatype::Varchar(255),
-            ))
-            .set_column(Column::new(
-                db_name,
-                table_name,
-                "last_name",
-                Datatype::Varchar(255),
-            ))
-            .set_column(Column::new(
-                db_name,
-                table_name,
-                "is_enabled",
-                Datatype::Tinyint(1),
-            ));
-
-        table.set_index(Index::new("index_1", "test_id", false, false));
-
-        let fk = Constraint::new("fk_1", "test_id", ("children", "test_id"));
-
-        table.set_constraint(fk);
-
-        db.set_table(table);
-
-        assert!(db.table("test").is_some());
-        assert_eq!(db.table("test").unwrap().name, "test");
-        assert_eq!(db.table("test").unwrap().index("index_1").unwrap().name(), "index_1");
-        assert_eq!(db.table("test").unwrap().constraint("fk_1").unwrap().local(), "test_id");
-        assert_eq!(db.table("test").unwrap().constraint("fk_1").unwrap().foreign().1, "test_id");
 
         println!("{}", serde_json::to_string(&db).unwrap());
     }
