@@ -525,7 +525,65 @@ mod tests {
 
         //
 
+        let products_table_name = "products";
+        let mut products_table = Table::new(clients_table_name);
+        products_table
+            .set_column(Column::new(
+                db_name,
+                products_table_name,
+                "product_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                products_table_name,
+                "name",
+                Datatype::Varchar(255),
+            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
+            .set_column(Column::new(
+                db_name,
+                products_table_name,
+                "is_enabled",
+                Datatype::Tinyint(1),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).set_default(Some(DefaultValue::Value(serde_json::Value::from(1)))).to_owned());
 
+        products_table.set_index(Index::new("PRIMARY", "product_id", true, true));
+        products_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
+        db.set_table(products_table);
+
+        //
+
+        let client_products_table_name = "client_products";
+        let mut client_products_table = Table::new(client_products_table_name);
+        client_products_table
+            .set_column(Column::new(
+                db_name,
+                client_products_table_name,
+                "client_product_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                client_products_table_name,
+                "client_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(Column::new(
+                db_name,
+                client_products_table_name,
+                "product_id",
+                Datatype::Int(10),
+            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned());
+
+        client_products_table.set_index(Index::new("PRIMARY", "client_product_id", true, true));
+        client_products_table.set_index(Index::new("fk_client_products_1_idx", "client_id", false, false));
+        client_products_table.set_index(Index::new("fk_client_products_2_idx", "product_id", false, false));
+        client_products_table.set_constraint(Constraint::new("fk_client_products_1", "client_id", ("clients", "client_id")));
+        client_products_table.set_constraint(Constraint::new("fk_client_products_2", "product_id", ("products", "product_id")));
+        client_products_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
+        db.set_table(client_products_table);
 
         //
 
