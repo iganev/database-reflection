@@ -1,8 +1,8 @@
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
-use indexmap::IndexMap;
 
 #[allow(dead_code)]
 const METADATA_CHARSET: &str = "charset";
@@ -14,6 +14,8 @@ const METADATA_UNSIGNED: &str = "unsigned";
 const METADATA_NULLABLE: &str = "nullable";
 #[allow(dead_code)]
 const METADATA_ON_UPDATE: &str = "on_update";
+#[allow(dead_code)]
+const METADATA_AUTO_INCREMENT: &str = "auto_increment";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -55,6 +57,34 @@ pub enum DefaultValue {
     Value(Value),
 }
 
+pub trait WithMetadata {
+    fn get_metadata(&self) -> &HashMap<String, String>;
+
+    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String>;
+
+    fn set_meta(&mut self, meta_key: impl ToString, meta_value: impl ToString) -> &mut Self {
+        self.get_metadata_mut()
+            .insert(meta_key.to_string(), meta_value.to_string());
+
+        self
+    }
+
+    fn set_meta_flag(&mut self, meta_flag: impl ToString) -> &mut Self {
+        self.get_metadata_mut()
+            .insert(meta_flag.to_string(), "1".to_string());
+
+        self
+    }
+
+    fn meta_flag(&self, flag: &str) -> bool {
+        self.get_metadata().contains_key(flag)
+    }
+
+    fn meta(&self, key: &str) -> Option<String> {
+        self.get_metadata().get(key).cloned()
+    }
+}
+
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
@@ -62,6 +92,16 @@ pub struct Database<'n> {
     tables: IndexMap<String, Table<'n>>,
     constraints: HashMap<String, Constraint<'n>>,
     metadata: HashMap<String, String>,
+}
+
+impl<'n> WithMetadata for Database<'n> {
+    fn get_metadata(&self) -> &HashMap<String, String> {
+        &self.metadata
+    }
+
+    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
+        &mut self.metadata
+    }
 }
 
 impl<'n> Database<'n> {
@@ -74,21 +114,6 @@ impl<'n> Database<'n> {
 
     pub fn name(&self) -> &str {
         self.name
-    }
-
-    pub fn set_meta(
-        &mut self,
-        meta_key: impl ToString,
-        meta_value: impl ToString,
-    ) -> &mut Database<'n> {
-        self.metadata
-            .insert(meta_key.to_string(), meta_value.to_string());
-
-        self
-    }
-
-    pub fn meta(&self, key: &str) -> Option<String> {
-        self.metadata.get(key).cloned()
     }
 
     pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
@@ -110,6 +135,16 @@ pub struct Table<'n> {
     constraints: HashMap<String, Constraint<'n>>,
     indexes: IndexMap<String, Index<'n>>,
     metadata: HashMap<String, String>,
+}
+
+impl<'n> WithMetadata for Table<'n> {
+    fn get_metadata(&self) -> &HashMap<String, String> {
+        &self.metadata
+    }
+
+    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
+        &mut self.metadata
+    }
 }
 
 impl<'n> Table<'n> {
@@ -155,20 +190,6 @@ impl<'n> Table<'n> {
         self.indexes.get(key)
     }
 
-    pub fn set_meta(
-        &mut self,
-        meta_key: impl ToString,
-        meta_value: impl ToString,
-    ) -> &mut Table<'n> {
-        self.metadata
-            .insert(meta_key.to_string(), meta_value.to_string());
-
-        self
-    }
-
-    pub fn meta(&self, key: &str) -> Option<String> {
-        self.metadata.get(key).cloned()
-    }
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -180,6 +201,16 @@ pub struct Column<'n> {
     #[serde(skip_serializing_if = "Option::is_none")]
     default: Option<DefaultValue>,
     metadata: HashMap<String, String>,
+}
+
+impl<'n> WithMetadata for Column<'n> {
+    fn get_metadata(&self) -> &HashMap<String, String> {
+        &self.metadata
+    }
+
+    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
+        &mut self.metadata
+    }
 }
 
 impl<'n> Column<'n> {
@@ -213,21 +244,6 @@ impl<'n> Column<'n> {
     pub fn default(&self) -> Option<DefaultValue> {
         self.default.clone()
     }
-
-    pub fn set_meta(
-        &mut self,
-        meta_key: impl ToString,
-        meta_value: impl ToString,
-    ) -> &mut Column<'n> {
-        self.metadata
-            .insert(meta_key.to_string(), meta_value.to_string());
-
-        self
-    }
-
-    pub fn meta(&self, key: &str) -> Option<String> {
-        self.metadata.get(key).cloned()
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -239,7 +255,7 @@ pub struct Index<'n> {
 }
 
 impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: &'n str, primary:bool, unique: bool) -> Self {
+    pub fn new(name: &'n str, column: &'n str, primary: bool, unique: bool) -> Self {
         Index {
             name,
             column,
@@ -256,7 +272,9 @@ impl<'n> Index<'n> {
         self.column
     }
 
-    pub fn primary(&self) -> bool { self.primary }
+    pub fn primary(&self) -> bool {
+        self.primary
+    }
 
     pub fn unique(&self) -> bool {
         self.unique
@@ -270,6 +288,16 @@ pub struct Constraint<'n> {
     foreign_table: &'n str,
     foreign_column: &'n str,
     metadata: HashMap<String, String>,
+}
+
+impl<'n> WithMetadata for Constraint<'n> {
+    fn get_metadata(&self) -> &HashMap<String, String> {
+        &self.metadata
+    }
+
+    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
+        &mut self.metadata
+    }
 }
 
 impl<'n> Constraint<'n> {
@@ -295,20 +323,6 @@ impl<'n> Constraint<'n> {
         (self.foreign_table, self.foreign_column)
     }
 
-    pub fn set_meta(
-        &mut self,
-        meta_key: impl ToString,
-        meta_value: impl ToString,
-    ) -> &mut Constraint<'n> {
-        self.metadata
-            .insert(meta_key.to_string(), meta_value.to_string());
-
-        self
-    }
-
-    pub fn meta(&self, key: &str) -> Option<String> {
-        self.metadata.get(key).cloned()
-    }
 }
 
 #[cfg(test)]
@@ -317,7 +331,6 @@ mod tests {
 
     #[test]
     fn construction() {
-
         // CREATE TABLE `clients` (
         // `client_id` int(10) UNSIGNED NOT NULL,
         // `email` varchar(255) NOT NULL,
@@ -389,12 +402,12 @@ mod tests {
         let clients_table_name = "clients";
         let mut clients_table = Table::new(clients_table_name);
         clients_table
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "client_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(
+                Column::new(db_name, clients_table_name, "client_id", Datatype::Int(10))
+                    .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                    .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                    .to_owned(),
+            )
             .set_column(Column::new(
                 db_name,
                 clients_table_name,
@@ -407,58 +420,88 @@ mod tests {
                 "password",
                 Datatype::Varchar(64),
             ))
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "phone",
-                Datatype::Varchar(45),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "first_name",
-                Datatype::Varchar(45),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "last_name",
-                Datatype::Varchar(45),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "is_email_verified",
-                Datatype::Tinyint(1),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).set_default(Some(DefaultValue::Value(serde_json::Value::from(0)))).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "email_verification_code",
-                Datatype::Varchar(64),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "password_reset_code",
-                Datatype::Varchar(64),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "last_access",
-                Datatype::Timestamp,
-            ).set_meta(METADATA_ON_UPDATE, "current_timestamp()").set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "created",
-                Datatype::Timestamp,
-            ).set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned());
+            .set_column(
+                Column::new(db_name, clients_table_name, "phone", Datatype::Varchar(45))
+                    .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                    .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "first_name",
+                    Datatype::Varchar(45),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "last_name",
+                    Datatype::Varchar(45),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "is_email_verified",
+                    Datatype::Tinyint(1),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "email_verification_code",
+                    Datatype::Varchar(64),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "password_reset_code",
+                    Datatype::Varchar(64),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "last_access",
+                    Datatype::Timestamp,
+                )
+                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                    "current_timestamp()",
+                ))))
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(db_name, clients_table_name, "created", Datatype::Timestamp)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
+            );
 
         clients_table.set_index(Index::new("PRIMARY", "client_id", true, true));
         clients_table.set_index(Index::new("email_UNIQUE", "email", false, true));
-        clients_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        clients_table
+            .set_meta(METADATA_CHARSET, "utf8mb4")
+            .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         db.set_table(clients_table);
 
@@ -467,18 +510,27 @@ mod tests {
         let client_tokens_table_name = "client_tokens";
         let mut client_tokens_table = Table::new(client_tokens_table_name);
         client_tokens_table
-            .set_column(Column::new(
-                db_name,
-                client_tokens_table_name,
-                "client_token_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
-            .set_column(Column::new(
-                db_name,
-                client_tokens_table_name,
-                "client_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
+            .set_column(
+                Column::new(
+                    db_name,
+                    client_tokens_table_name,
+                    "client_token_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    client_tokens_table_name,
+                    "client_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .to_owned(),
+            )
             .set_column(Column::new(
                 db_name,
                 clients_table_name,
@@ -491,35 +543,62 @@ mod tests {
                 "auth_token_expiration_date",
                 Datatype::Timestamp,
             ))
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "remote_address",
-                Datatype::Varchar(64),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "user_agent",
-                Datatype::Varchar(255),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "last_access",
-                Datatype::Timestamp,
-            ).set_meta(METADATA_ON_UPDATE, "current_timestamp()").set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned())
-            .set_column(Column::new(
-                db_name,
-                clients_table_name,
-                "created",
-                Datatype::Timestamp,
-            ).set_default(Some(DefaultValue::Value(serde_json::Value::from("current_timestamp()")))).to_owned());
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "remote_address",
+                    Datatype::Varchar(64),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "user_agent",
+                    Datatype::Varchar(255),
+                )
+                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    clients_table_name,
+                    "last_access",
+                    Datatype::Timestamp,
+                )
+                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                    "current_timestamp()",
+                ))))
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(db_name, clients_table_name, "created", Datatype::Timestamp)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
+            );
 
         client_tokens_table.set_index(Index::new("PRIMARY", "client_token_id", true, true));
-        client_tokens_table.set_index(Index::new("fk_client_tokens_1_idx", "client_id", false, false));
-        client_tokens_table.set_constraint(Constraint::new("fk_client_tokens_1", "client_id", ("clients", "client_id")));
-        client_tokens_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        client_tokens_table.set_index(Index::new(
+            "fk_client_tokens_1_idx",
+            "client_id",
+            false,
+            false,
+        ));
+        client_tokens_table.set_constraint(Constraint::new(
+            "fk_client_tokens_1",
+            "client_id",
+            ("clients", "client_id"),
+        ));
+        client_tokens_table
+            .set_meta(METADATA_CHARSET, "utf8mb4")
+            .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         db.set_table(client_tokens_table);
 
@@ -528,27 +607,38 @@ mod tests {
         let products_table_name = "products";
         let mut products_table = Table::new(clients_table_name);
         products_table
-            .set_column(Column::new(
-                db_name,
-                products_table_name,
-                "product_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
-            .set_column(Column::new(
-                db_name,
-                products_table_name,
-                "name",
-                Datatype::Varchar(255),
-            ).set_meta(METADATA_NULLABLE, METADATA_NULLABLE).to_owned())
-            .set_column(Column::new(
-                db_name,
-                products_table_name,
-                "is_enabled",
-                Datatype::Tinyint(1),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).set_default(Some(DefaultValue::Value(serde_json::Value::from(1)))).to_owned());
+            .set_column(
+                Column::new(
+                    db_name,
+                    products_table_name,
+                    "product_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(db_name, products_table_name, "name", Datatype::Varchar(255))
+                    .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                    .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    products_table_name,
+                    "is_enabled",
+                    Datatype::Tinyint(1),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
+                .to_owned(),
+            );
 
         products_table.set_index(Index::new("PRIMARY", "product_id", true, true));
-        products_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        products_table
+            .set_meta(METADATA_CHARSET, "utf8mb4")
+            .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         db.set_table(products_table);
 
@@ -557,31 +647,64 @@ mod tests {
         let client_products_table_name = "client_products";
         let mut client_products_table = Table::new(client_products_table_name);
         client_products_table
-            .set_column(Column::new(
-                db_name,
-                client_products_table_name,
-                "client_product_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
-            .set_column(Column::new(
-                db_name,
-                client_products_table_name,
-                "client_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned())
-            .set_column(Column::new(
-                db_name,
-                client_products_table_name,
-                "product_id",
-                Datatype::Int(10),
-            ).set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED).to_owned());
+            .set_column(
+                Column::new(
+                    db_name,
+                    client_products_table_name,
+                    "client_product_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    client_products_table_name,
+                    "client_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .to_owned(),
+            )
+            .set_column(
+                Column::new(
+                    db_name,
+                    client_products_table_name,
+                    "product_id",
+                    Datatype::Int(10),
+                )
+                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .to_owned(),
+            );
 
         client_products_table.set_index(Index::new("PRIMARY", "client_product_id", true, true));
-        client_products_table.set_index(Index::new("fk_client_products_1_idx", "client_id", false, false));
-        client_products_table.set_index(Index::new("fk_client_products_2_idx", "product_id", false, false));
-        client_products_table.set_constraint(Constraint::new("fk_client_products_1", "client_id", ("clients", "client_id")));
-        client_products_table.set_constraint(Constraint::new("fk_client_products_2", "product_id", ("products", "product_id")));
-        client_products_table.set_meta(METADATA_CHARSET, "utf8mb4").set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+        client_products_table.set_index(Index::new(
+            "fk_client_products_1_idx",
+            "client_id",
+            false,
+            false,
+        ));
+        client_products_table.set_index(Index::new(
+            "fk_client_products_2_idx",
+            "product_id",
+            false,
+            false,
+        ));
+        client_products_table.set_constraint(Constraint::new(
+            "fk_client_products_1",
+            "client_id",
+            ("clients", "client_id"),
+        ));
+        client_products_table.set_constraint(Constraint::new(
+            "fk_client_products_2",
+            "product_id",
+            ("products", "product_id"),
+        ));
+        client_products_table
+            .set_meta(METADATA_CHARSET, "utf8mb4")
+            .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         db.set_table(client_products_table);
 
