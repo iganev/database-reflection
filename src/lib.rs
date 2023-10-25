@@ -404,8 +404,8 @@ mod tests {
         clients_table
             .set_column(
                 Column::new(db_name, clients_table_name, "client_id", Datatype::Int(10))
-                    .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
-                    .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                    .set_meta_flag(METADATA_UNSIGNED)
+                    .set_meta_flag(METADATA_AUTO_INCREMENT)
                     .to_owned(),
             )
             .set_column(Column::new(
@@ -422,7 +422,7 @@ mod tests {
             ))
             .set_column(
                 Column::new(db_name, clients_table_name, "phone", Datatype::Varchar(45))
-                    .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                    .set_meta_flag(METADATA_NULLABLE)
                     .to_owned(),
             )
             .set_column(
@@ -432,7 +432,7 @@ mod tests {
                     "first_name",
                     Datatype::Varchar(45),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -442,7 +442,7 @@ mod tests {
                     "last_name",
                     Datatype::Varchar(45),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -452,7 +452,7 @@ mod tests {
                     "is_email_verified",
                     Datatype::Tinyint(1),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_UNSIGNED)
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
                 .to_owned(),
             )
@@ -463,7 +463,7 @@ mod tests {
                     "email_verification_code",
                     Datatype::Varchar(64),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -473,7 +473,7 @@ mod tests {
                     "password_reset_code",
                     Datatype::Varchar(64),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -517,8 +517,8 @@ mod tests {
                     "client_token_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
-                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .set_meta_flag(METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_AUTO_INCREMENT)
                 .to_owned(),
             )
             .set_column(
@@ -528,7 +528,7 @@ mod tests {
                     "client_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_UNSIGNED)
                 .to_owned(),
             )
             .set_column(Column::new(
@@ -550,7 +550,7 @@ mod tests {
                     "remote_address",
                     Datatype::Varchar(64),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -560,7 +560,7 @@ mod tests {
                     "user_agent",
                     Datatype::Varchar(255),
                 )
-                .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                .set_meta_flag(METADATA_NULLABLE)
                 .to_owned(),
             )
             .set_column(
@@ -614,13 +614,13 @@ mod tests {
                     "product_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
-                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .set_meta_flag(METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_AUTO_INCREMENT)
                 .to_owned(),
             )
             .set_column(
                 Column::new(db_name, products_table_name, "name", Datatype::Varchar(255))
-                    .set_meta(METADATA_NULLABLE, METADATA_NULLABLE)
+                    .set_meta_flag(METADATA_NULLABLE)
                     .to_owned(),
             )
             .set_column(
@@ -630,7 +630,7 @@ mod tests {
                     "is_enabled",
                     Datatype::Tinyint(1),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_UNSIGNED)
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
                 .to_owned(),
             );
@@ -654,8 +654,8 @@ mod tests {
                     "client_product_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
-                .set_meta(METADATA_AUTO_INCREMENT, METADATA_AUTO_INCREMENT)
+                .set_meta_flag(METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_AUTO_INCREMENT)
                 .to_owned(),
             )
             .set_column(
@@ -665,7 +665,7 @@ mod tests {
                     "client_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_UNSIGNED)
                 .to_owned(),
             )
             .set_column(
@@ -675,7 +675,7 @@ mod tests {
                     "product_id",
                     Datatype::Int(10),
                 )
-                .set_meta(METADATA_UNSIGNED, METADATA_UNSIGNED)
+                .set_meta_flag(METADATA_UNSIGNED)
                 .to_owned(),
             );
 
