@@ -289,7 +289,7 @@ impl<'n> Index<'n> {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Constraint<'n> {
     name: &'n str,
-    local: &'n str,
+    local: Rc<Column<'n>>,
     foreign: Rc<Column<'n>>,
     metadata: HashMap<String, String>,
 }
@@ -305,7 +305,7 @@ impl<'n> WithMetadata for Constraint<'n> {
 }
 
 impl<'n> Constraint<'n> {
-    pub fn new(name: &'n str, local: &'n str, foreign: Rc<Column<'n>>) -> Self {
+    pub fn new(name: &'n str, local: Rc<Column<'n>>, foreign: Rc<Column<'n>>) -> Self {
         Constraint {
             name,
             local,
@@ -318,8 +318,8 @@ impl<'n> Constraint<'n> {
         self.name
     }
 
-    pub fn local(&self) -> &str {
-        self.local
+    pub fn local(&self) -> &Column {
+        &self.local
     }
 
     pub fn foreign(&self) -> &Column {
@@ -610,7 +610,7 @@ mod tests {
             if let Some(client_id_col) = clients_table.column("client_id") {
                 client_tokens_table.set_constraint(Constraint::new(
                     "fk_client_tokens_1",
-                    "client_id",
+                    client_tokens_table.column("client_id").unwrap(),
                     client_id_col,
                 ));
             }
@@ -720,7 +720,7 @@ mod tests {
             if let Some(client_id_col) = clients_table.column("client_id") {
                 client_products_table.set_constraint(Constraint::new(
                     "fk_client_products_1",
-                    "client_id",
+                    client_products_table.column("client_id").unwrap(),
                     client_id_col,
                 ));
             }
@@ -730,7 +730,7 @@ mod tests {
             if let Some(product_id_col) = products_table.column("product_id") {
                 client_products_table.set_constraint(Constraint::new(
                     "fk_client_products_2",
-                    "product_id",
+                    client_products_table.column("product_id").unwrap(),
                     product_id_col,
                 ));
             }
