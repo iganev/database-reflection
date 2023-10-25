@@ -90,7 +90,7 @@ pub trait WithMetadata {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
     name: &'n str,
-    tables: IndexMap<&'n str, Table<'n>>,
+    tables: IndexMap<&'n str, Rc<Table<'n>>>,
     constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
     metadata: HashMap<String, String>,
 }
@@ -122,13 +122,13 @@ impl<'n> Database<'n> {
             self.constraints.insert(constraint_name, constraint.clone());
         }
 
-        self.tables.insert(table.name, table);
+        self.tables.insert(table.name, Rc::new(table));
 
         self
     }
 
-    pub fn table(&self, key: &str) -> Option<&Table> {
-        self.tables.get(key)
+    pub fn table(&self, key: &str) -> Option<Rc<Table<'n>>> {
+        self.tables.get(key).cloned()
     }
 }
 
@@ -170,8 +170,8 @@ impl<'n> Table<'n> {
         self
     }
 
-    pub fn column(&self, key: &str) -> Option<&Rc<Column<'n>>> {
-        self.columns.get(key)
+    pub fn column(&self, key: &str) -> Option<Rc<Column<'n>>> {
+        self.columns.get(key).cloned()
     }
 
     pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
@@ -181,8 +181,8 @@ impl<'n> Table<'n> {
         self
     }
 
-    pub fn constraint(&self, key: &str) -> Option<&Rc<Constraint<'n>>> {
-        self.constraints.get(key)
+    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint<'n>>> {
+        self.constraints.get(key).cloned()
     }
 
     pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
@@ -290,8 +290,7 @@ impl<'n> Index<'n> {
 pub struct Constraint<'n> {
     name: &'n str,
     local: &'n str,
-    foreign_table: &'n str,
-    foreign_column: &'n str,
+    foreign: Rc<Column<'n>>,
     metadata: HashMap<String, String>,
 }
 
@@ -306,12 +305,11 @@ impl<'n> WithMetadata for Constraint<'n> {
 }
 
 impl<'n> Constraint<'n> {
-    pub fn new(name: &'n str, local: &'n str, foreign: (&'n str, &'n str)) -> Self {
+    pub fn new(name: &'n str, local: &'n str, foreign: Rc<Column<'n>>) -> Self {
         Constraint {
             name,
             local,
-            foreign_table: foreign.0,
-            foreign_column: foreign.1,
+            foreign,
             ..Default::default()
         }
     }
@@ -324,8 +322,8 @@ impl<'n> Constraint<'n> {
         self.local
     }
 
-    pub fn foreign(&self) -> (&str, &str) {
-        (self.foreign_table, self.foreign_column)
+    pub fn foreign(&self) -> &Column {
+        &self.foreign
     }
 
 }
@@ -608,11 +606,16 @@ mod tests {
             ));
         }
 
-        client_tokens_table.set_constraint(Constraint::new(
-            "fk_client_tokens_1",
-            "client_id",
-            ("clients", "client_id"),
-        ));
+        if let Some(clients_table) = db.table("clients") {
+            if let Some(client_id_col) = clients_table.column("client_id") {
+                client_tokens_table.set_constraint(Constraint::new(
+                    "fk_client_tokens_1",
+                    "client_id",
+                    client_id_col,
+                ));
+            }
+        }
+
         client_tokens_table
             .set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
@@ -712,16 +715,27 @@ mod tests {
             false,
             false,
         ));
-        client_products_table.set_constraint(Constraint::new(
-            "fk_client_products_1",
-            "client_id",
-            ("clients", "client_id"),
-        ));
-        client_products_table.set_constraint(Constraint::new(
-            "fk_client_products_2",
-            "product_id",
-            ("products", "product_id"),
-        ));
+
+        if let Some(clients_table) = db.table("clients") {
+            if let Some(client_id_col) = clients_table.column("client_id") {
+                client_products_table.set_constraint(Constraint::new(
+                    "fk_client_products_1",
+                    "client_id",
+                    client_id_col,
+                ));
+            }
+        }
+
+        if let Some(products_table) = db.table("products") {
+            if let Some(product_id_col) = products_table.column("product_id") {
+                client_products_table.set_constraint(Constraint::new(
+                    "fk_client_products_2",
+                    "product_id",
+                    product_id_col,
+                ));
+            }
+        }
+
         client_products_table
             .set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
