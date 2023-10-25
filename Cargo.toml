@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 sqlx = { version = "^0.6", features = ["runtime-tokio-rustls"] }
-serde = { version = "^1", features = ["derive"] }
+serde = { version = "^1", features = ["derive", "rc"] }
 serde_with = { version = "^3" }
 serde_json = { version = "^1" }
 indexmap = { version = "^2", features = ["serde"] }

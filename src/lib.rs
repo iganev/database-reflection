@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 #[allow(dead_code)]
 const METADATA_CHARSET: &str = "charset";
@@ -89,8 +90,8 @@ pub trait WithMetadata {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
     name: &'n str,
-    tables: IndexMap<String, Table<'n>>,
-    constraints: HashMap<String, Constraint<'n>>,
+    tables: IndexMap<&'n str, Table<'n>>,
+    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
     metadata: HashMap<String, String>,
 }
 
@@ -117,7 +118,11 @@ impl<'n> Database<'n> {
     }
 
     pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
-        self.tables.insert(table.name.to_string(), table);
+        for (constraint_name, constraint) in table.constraints.iter() {
+            self.constraints.insert(constraint_name, constraint.clone());
+        }
+
+        self.tables.insert(table.name, table);
 
         self
     }
@@ -131,9 +136,9 @@ impl<'n> Database<'n> {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table<'n> {
     name: &'n str,
-    columns: IndexMap<String, Column<'n>>,
-    constraints: HashMap<String, Constraint<'n>>,
-    indexes: IndexMap<String, Index<'n>>,
+    columns: IndexMap<&'n str, Rc<Column<'n>>>,
+    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
+    indexes: IndexMap<&'n str, Index<'n>>,
     metadata: HashMap<String, String>,
 }
 
@@ -160,28 +165,28 @@ impl<'n> Table<'n> {
     }
 
     pub fn set_column(&mut self, column: Column<'n>) -> &mut Table<'n> {
-        self.columns.insert(column.name.to_string(), column);
+        self.columns.insert(column.name, Rc::new(column));
 
         self
     }
 
-    pub fn column(&self, key: &str) -> Option<&Column> {
+    pub fn column(&self, key: &str) -> Option<&Rc<Column<'n>>> {
         self.columns.get(key)
     }
 
     pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
         self.constraints
-            .insert(constraint.name.to_string(), constraint);
+            .insert(constraint.name, Rc::new(constraint));
 
         self
     }
 
-    pub fn constraint(&self, key: &str) -> Option<&Constraint> {
+    pub fn constraint(&self, key: &str) -> Option<&Rc<Constraint<'n>>> {
         self.constraints.get(key)
     }
 
     pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
-        self.indexes.insert(index.name.to_string(), index);
+        self.indexes.insert(index.name, index);
 
         self
     }
@@ -249,13 +254,13 @@ impl<'n> Column<'n> {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index<'n> {
     name: &'n str,
-    column: &'n str,
+    column: Rc<Column<'n>>,//&'n str,
     primary: bool,
     unique: bool,
 }
 
 impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: &'n str, primary: bool, unique: bool) -> Self {
+    pub fn new(name: &'n str, column: Rc<Column<'n>>, primary: bool, unique: bool) -> Self {
         Index {
             name,
             column,
@@ -268,8 +273,8 @@ impl<'n> Index<'n> {
         self.name
     }
 
-    pub fn column(&self) -> &str {
-        self.column
+    pub fn column(&self) -> &Column {
+        &self.column
     }
 
     pub fn primary(&self) -> bool {
@@ -497,8 +502,14 @@ mod tests {
                     .to_owned(),
             );
 
-        clients_table.set_index(Index::new("PRIMARY", "client_id", true, true));
-        clients_table.set_index(Index::new("email_UNIQUE", "email", false, true));
+        if let Some(client_id_col) = clients_table.column("client_id") {
+            clients_table.set_index(Index::new("PRIMARY", client_id_col.clone(), true, true));
+        }
+
+        if let Some(email_col) = clients_table.column("email") {
+            clients_table.set_index(Index::new("email_UNIQUE", email_col.clone(), false, true));
+        }
+
         clients_table
             .set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
@@ -584,13 +595,19 @@ mod tests {
                     .to_owned(),
             );
 
-        client_tokens_table.set_index(Index::new("PRIMARY", "client_token_id", true, true));
-        client_tokens_table.set_index(Index::new(
-            "fk_client_tokens_1_idx",
-            "client_id",
-            false,
-            false,
-        ));
+        if let Some(client_token_id_col) = client_tokens_table.column("client_token_id") {
+            client_tokens_table.set_index(Index::new("PRIMARY", client_token_id_col.clone(), true, true));
+        }
+
+        if let Some(client_id_col) = client_tokens_table.column("client_id") {
+            client_tokens_table.set_index(Index::new(
+                "fk_client_tokens_1_idx",
+                client_id_col.clone(),
+                false,
+                false,
+            ));
+        }
+
         client_tokens_table.set_constraint(Constraint::new(
             "fk_client_tokens_1",
             "client_id",
@@ -605,7 +622,7 @@ mod tests {
         //
 
         let products_table_name = "products";
-        let mut products_table = Table::new(clients_table_name);
+        let mut products_table = Table::new(products_table_name);
         products_table
             .set_column(
                 Column::new(
@@ -635,7 +652,10 @@ mod tests {
                 .to_owned(),
             );
 
-        products_table.set_index(Index::new("PRIMARY", "product_id", true, true));
+        if let Some(product_id_col) = products_table.column("product_id") {
+            products_table.set_index(Index::new("PRIMARY", product_id_col.clone(), true, true));
+        }
+
         products_table
             .set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
@@ -679,16 +699,16 @@ mod tests {
                 .to_owned(),
             );
 
-        client_products_table.set_index(Index::new("PRIMARY", "client_product_id", true, true));
+        client_products_table.set_index(Index::new("PRIMARY", client_products_table.column("client_product_id").unwrap().clone(), true, true));
         client_products_table.set_index(Index::new(
             "fk_client_products_1_idx",
-            "client_id",
+            client_products_table.column("client_id").unwrap().clone(),
             false,
             false,
         ));
         client_products_table.set_index(Index::new(
             "fk_client_products_2_idx",
-            "product_id",
+            client_products_table.column("product_id").unwrap().clone(),
             false,
             false,
         ));
