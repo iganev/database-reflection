@@ -101,8 +101,10 @@ pub trait WithMetadata {
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
-    name: &'n str,
+    name: String,
+    #[serde(borrow = "'n")]
     tables: IndexMap<&'n str, Rc<Table<'n>>>,
+    #[serde(borrow = "'n")]
     constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
     metadata: HashMap<String, String>,
 }
@@ -118,15 +120,15 @@ impl<'n> WithMetadata for Database<'n> {
 }
 
 impl<'n> Database<'n> {
-    pub fn new(name: &'n str) -> Database<'n> {
+    pub fn new(name: impl ToString) -> Database<'n> {
         Database {
-            name,
+            name: name.to_string(),
             ..Default::default()
         }
     }
 
-    pub fn name(&self) -> &'n str {
-        self.name
+    pub fn name(&'n self) -> &'n str {
+        &self.name
     }
 
     pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
