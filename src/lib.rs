@@ -16,7 +16,19 @@ const METADATA_NULLABLE: &str = "nullable";
 #[allow(dead_code)]
 const METADATA_ON_UPDATE: &str = "on_update";
 #[allow(dead_code)]
+const METADATA_ON_DELETE: &str = "on_delete";
+#[allow(dead_code)]
+const METADATA_CASCADE: &str = "cascade";
+#[allow(dead_code)]
+const METADATA_SET_NULL: &str = "set_null";
+#[allow(dead_code)]
 const METADATA_AUTO_INCREMENT: &str = "auto_increment";
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ConstraintSide {
+    Local,
+    Foreign,
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -106,14 +118,14 @@ impl<'n> WithMetadata for Database<'n> {
 }
 
 impl<'n> Database<'n> {
-    pub fn new(name: &'n str) -> Database {
+    pub fn new(name: &'n str) -> Database<'n> {
         Database {
             name,
             ..Default::default()
         }
     }
 
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'n str {
         self.name
     }
 
@@ -129,6 +141,58 @@ impl<'n> Database<'n> {
 
     pub fn table(&self, key: &str) -> Option<Rc<Table<'n>>> {
         self.tables.get(key).cloned()
+    }
+
+    pub fn constraints_by_table(
+        &self,
+        table: Rc<Table<'n>>,
+        side: Option<ConstraintSide>,
+    ) -> Vec<Rc<Constraint<'n>>> {
+        self.constraints
+            .values()
+            .filter(|c| {
+                if c.local.table == table.name()
+                    && (side != Some(ConstraintSide::Foreign))
+                {
+                    return true;
+                }
+
+                if c.foreign.table == table.name()
+                    && (side != Some(ConstraintSide::Local))
+                {
+                    return true;
+                }
+
+                false
+            })
+            .map(|c| c.clone())
+            .collect::<Vec<Rc<Constraint>>>()
+    }
+
+    pub fn constraints_by_column(
+        &self,
+        column: Rc<Column<'n>>,
+        side: Option<ConstraintSide>,
+    ) -> Vec<Rc<Constraint<'n>>> {
+        self.constraints
+            .values()
+            .filter(|c| {
+                if c.local == column
+                    && (side != Some(ConstraintSide::Foreign))
+                {
+                    return true;
+                }
+
+                if c.foreign == column
+                    && (side != Some(ConstraintSide::Local))
+                {
+                    return true;
+                }
+
+                false
+            })
+            .map(|c| c.clone())
+            .collect::<Vec<Rc<Constraint>>>()
     }
 }
 
@@ -194,7 +258,6 @@ impl<'n> Table<'n> {
     pub fn index(&self, key: &str) -> Option<&Index> {
         self.indexes.get(key)
     }
-
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -254,7 +317,7 @@ impl<'n> Column<'n> {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index<'n> {
     name: &'n str,
-    column: Rc<Column<'n>>,//&'n str,
+    column: Rc<Column<'n>>, //&'n str,
     primary: bool,
     unique: bool,
 }
@@ -325,7 +388,6 @@ impl<'n> Constraint<'n> {
     pub fn foreign(&self) -> &Column {
         &self.foreign
     }
-
 }
 
 #[cfg(test)]
@@ -594,7 +656,12 @@ mod tests {
             );
 
         if let Some(client_token_id_col) = client_tokens_table.column("client_token_id") {
-            client_tokens_table.set_index(Index::new("PRIMARY", client_token_id_col.clone(), true, true));
+            client_tokens_table.set_index(Index::new(
+                "PRIMARY",
+                client_token_id_col.clone(),
+                true,
+                true,
+            ));
         }
 
         if let Some(client_id_col) = client_tokens_table.column("client_id") {
@@ -702,7 +769,15 @@ mod tests {
                 .to_owned(),
             );
 
-        client_products_table.set_index(Index::new("PRIMARY", client_products_table.column("client_product_id").unwrap().clone(), true, true));
+        client_products_table.set_index(Index::new(
+            "PRIMARY",
+            client_products_table
+                .column("client_product_id")
+                .unwrap()
+                .clone(),
+            true,
+            true,
+        ));
         client_products_table.set_index(Index::new(
             "fk_client_products_1_idx",
             client_products_table.column("client_id").unwrap().clone(),
@@ -743,6 +818,28 @@ mod tests {
         db.set_table(client_products_table);
 
         //
+
+        for c in db.constraints_by_table(db.table("clients").unwrap(), None).iter() {
+            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        }
+
+        println!();
+
+        for c in db.constraints_by_table(db.table("products").unwrap(), None).iter() {
+            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        }
+
+        println!();
+
+        for c in db.constraints_by_column(db.table("client_products").unwrap().column("client_id").unwrap(), None).iter() {
+            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        }
+
+        println!();
+
+        for c in db.constraints_by_column(db.table("products").unwrap().column("product_id").unwrap(), None).iter() {
+            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        }
 
         assert_eq!(db.name(), db_name);
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
