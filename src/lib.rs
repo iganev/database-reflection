@@ -151,21 +151,17 @@ impl<'n> Database<'n> {
         self.constraints
             .values()
             .filter(|c| {
-                if c.local.table == table.name()
-                    && (side != Some(ConstraintSide::Foreign))
-                {
+                if c.local.table == table.name() && (side != Some(ConstraintSide::Foreign)) {
                     return true;
                 }
 
-                if c.foreign.table == table.name()
-                    && (side != Some(ConstraintSide::Local))
-                {
+                if c.foreign.table == table.name() && (side != Some(ConstraintSide::Local)) {
                     return true;
                 }
 
                 false
             })
-            .map(|c| c.clone())
+            .cloned()
             .collect::<Vec<Rc<Constraint>>>()
     }
 
@@ -177,21 +173,17 @@ impl<'n> Database<'n> {
         self.constraints
             .values()
             .filter(|c| {
-                if c.local == column
-                    && (side != Some(ConstraintSide::Foreign))
-                {
+                if c.local == column && (side != Some(ConstraintSide::Foreign)) {
                     return true;
                 }
 
-                if c.foreign == column
-                    && (side != Some(ConstraintSide::Local))
-                {
+                if c.foreign == column && (side != Some(ConstraintSide::Local)) {
                     return true;
                 }
 
                 false
             })
-            .map(|c| c.clone())
+            .cloned()
             .collect::<Vec<Rc<Constraint>>>()
     }
 }
@@ -819,26 +811,59 @@ mod tests {
 
         //
 
-        for c in db.constraints_by_table(db.table("clients").unwrap(), None).iter() {
-            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        for c in db
+            .constraints_by_table(db.table("clients").unwrap(), None)
+            .iter()
+        {
+            println!(
+                "Constraint {}.{} -> {}.{}",
+                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+            );
         }
 
         println!();
 
-        for c in db.constraints_by_table(db.table("products").unwrap(), None).iter() {
-            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        for c in db
+            .constraints_by_table(db.table("products").unwrap(), None)
+            .iter()
+        {
+            println!(
+                "Constraint {}.{} -> {}.{}",
+                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+            );
         }
 
         println!();
 
-        for c in db.constraints_by_column(db.table("client_products").unwrap().column("client_id").unwrap(), None).iter() {
-            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        for c in db
+            .constraints_by_column(
+                db.table("client_products")
+                    .unwrap()
+                    .column("client_id")
+                    .unwrap(),
+                None,
+            )
+            .iter()
+        {
+            println!(
+                "Constraint {}.{} -> {}.{}",
+                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+            );
         }
 
         println!();
 
-        for c in db.constraints_by_column(db.table("products").unwrap().column("product_id").unwrap(), None).iter() {
-            println!("Constraint {}.{} -> {}.{}", c.local.table, c.local.name, c.foreign.table, c.foreign.name);
+        for c in db
+            .constraints_by_column(
+                db.table("products").unwrap().column("product_id").unwrap(),
+                None,
+            )
+            .iter()
+        {
+            println!(
+                "Constraint {}.{} -> {}.{}",
+                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+            );
         }
 
         assert_eq!(db.name(), db_name);
