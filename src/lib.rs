@@ -1,12 +1,12 @@
 pub mod metadata;
 
+use crate::metadata::with_metadata::WithMetadata;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::metadata::with_metadata::WithMetadata;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ConstraintSide {
@@ -53,8 +53,6 @@ pub enum DefaultValue {
     Null,
     Value(Value),
 }
-
-
 
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -344,8 +342,8 @@ impl<'n> Constraint<'n> {
 
 #[cfg(test)]
 mod tests {
-    use crate::metadata::consts::*;
     use super::*;
+    use crate::metadata::consts::*;
 
     #[test]
     fn construction() {
