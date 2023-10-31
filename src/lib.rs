@@ -345,8 +345,7 @@ mod tests {
     use super::*;
     use crate::metadata::consts::*;
 
-    #[test]
-    fn construction() {
+    fn get_mock_db() -> Database<'static> {
         // CREATE TABLE `clients` (
         // `client_id` int(10) UNSIGNED NOT NULL,
         // `email` varchar(255) NOT NULL,
@@ -448,8 +447,8 @@ mod tests {
                     "first_name",
                     Datatype::Varchar(45),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -458,8 +457,8 @@ mod tests {
                     "last_name",
                     Datatype::Varchar(45),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -468,9 +467,9 @@ mod tests {
                     "is_email_verified",
                     Datatype::Tinyint(1),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -479,8 +478,8 @@ mod tests {
                     "email_verification_code",
                     Datatype::Varchar(64),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -489,8 +488,8 @@ mod tests {
                     "password_reset_code",
                     Datatype::Varchar(64),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -499,11 +498,11 @@ mod tests {
                     "last_access",
                     Datatype::Timestamp,
                 )
-                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+                    .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
             )
             .set_column(
                 Column::new(db_name, clients_table_name, "created", Datatype::Timestamp)
@@ -539,9 +538,9 @@ mod tests {
                     "client_token_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -550,8 +549,8 @@ mod tests {
                     "client_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             )
             .set_column(Column::new(
                 db_name,
@@ -572,8 +571,8 @@ mod tests {
                     "remote_address",
                     Datatype::Varchar(64),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -582,8 +581,8 @@ mod tests {
                     "user_agent",
                     Datatype::Varchar(255),
                 )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -592,11 +591,11 @@ mod tests {
                     "last_access",
                     Datatype::Timestamp,
                 )
-                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+                    .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
             )
             .set_column(
                 Column::new(db_name, clients_table_name, "created", Datatype::Timestamp)
@@ -652,9 +651,9 @@ mod tests {
                     "product_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(db_name, products_table_name, "name", Datatype::Varchar(255))
@@ -668,9 +667,9 @@ mod tests {
                     "is_enabled",
                     Datatype::Tinyint(1),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
+                    .to_owned(),
             );
 
         if let Some(product_id_col) = products_table.column("product_id") {
@@ -695,9 +694,9 @@ mod tests {
                     "client_product_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -706,8 +705,8 @@ mod tests {
                     "client_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -716,8 +715,8 @@ mod tests {
                     "product_id",
                     Datatype::Int(10),
                 )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             );
 
         client_products_table.set_index(Index::new(
@@ -767,6 +766,14 @@ mod tests {
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         db.set_table(client_products_table);
+
+        db
+    }
+
+    #[test]
+    fn construction() {
+
+        let db = get_mock_db();
 
         //
 
@@ -825,7 +832,7 @@ mod tests {
             );
         }
 
-        assert_eq!(db.name(), db_name);
+        assert_eq!(db.name(), "test");
         assert_eq!(db.meta(METADATA_CHARSET), Some(String::from("utf8mb4")));
         assert_eq!(
             db.meta(METADATA_COLLATION),
