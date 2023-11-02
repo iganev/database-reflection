@@ -416,36 +416,36 @@ mod tests {
 
         //
 
-        let clienta_table_name = "clients";
-        let mut clients_table = Table::new(db_name, clienta_table_name);
+        let clients_table_name = "clients";
+        let mut clients_table = Table::new(db_name, clients_table_name);
         clients_table
             .set_column(
-                Column::new(db_name, clienta_table_name, "client_id", Datatype::Int(10))
+                Column::new(db_name, clients_table_name, "client_id", Datatype::Int(10))
                     .set_meta_flag(METADATA_FLAG_UNSIGNED)
                     .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
                     .to_owned(),
             )
             .set_column(Column::new(
                 db_name,
-                clienta_table_name,
+                clients_table_name,
                 "email",
                 Datatype::Varchar(255),
             ))
             .set_column(Column::new(
                 db_name,
-                clienta_table_name,
+                clients_table_name,
                 "password",
                 Datatype::Varchar(64),
             ))
             .set_column(
-                Column::new(db_name, clienta_table_name, "phone", Datatype::Varchar(45))
+                Column::new(db_name, clients_table_name, "phone", Datatype::Varchar(45))
                     .set_meta_flag(METADATA_FLAG_NULLABLE)
                     .to_owned(),
             )
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "first_name",
                     Datatype::Varchar(45),
                 )
@@ -455,7 +455,7 @@ mod tests {
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "last_name",
                     Datatype::Varchar(45),
                 )
@@ -465,7 +465,7 @@ mod tests {
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "is_email_verified",
                     Datatype::Tinyint(1),
                 )
@@ -476,7 +476,7 @@ mod tests {
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "email_verification_code",
                     Datatype::Varchar(64),
                 )
@@ -486,7 +486,7 @@ mod tests {
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "password_reset_code",
                     Datatype::Varchar(64),
                 )
@@ -496,7 +496,7 @@ mod tests {
             .set_column(
                 Column::new(
                     db_name,
-                    clienta_table_name,
+                    clients_table_name,
                     "last_access",
                     Datatype::Timestamp,
                 )
@@ -507,7 +507,7 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(db_name, clienta_table_name, "created", Datatype::Timestamp)
+                Column::new(db_name, clients_table_name, "created", Datatype::Timestamp)
                     .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                         "current_timestamp()",
                     ))))
