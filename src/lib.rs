@@ -347,7 +347,7 @@ mod tests {
     use super::*;
     use crate::metadata::consts::*;
 
-    fn get_mock_db() -> Database<'static> {
+    fn get_mock_db<'n>() -> Database<'n> {
         // CREATE TABLE `clients` (
         // `client_id` int(10) UNSIGNED NOT NULL,
         // `email` varchar(255) NOT NULL,
@@ -408,42 +408,44 @@ mod tests {
         // ADD CONSTRAINT `fk_client_products_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
         // ADD CONSTRAINT `fk_client_products_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-        let mut db = Database::new("test");
+        let db_name = "test";
+        let mut db = Database::new(db_name);
 
         db.set_meta(METADATA_CHARSET, "utf8mb4")
             .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
         //
 
-        let mut clients_table = Table::new(db.name(), "clients");
+        let clienta_table_name = "clients";
+        let mut clients_table = Table::new(db_name, clienta_table_name);
         clients_table
             .set_column(
-                Column::new(db.name(), clients_table.name(), "client_id", Datatype::Int(10))
+                Column::new(db_name, clienta_table_name, "client_id", Datatype::Int(10))
                     .set_meta_flag(METADATA_FLAG_UNSIGNED)
                     .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
                     .to_owned(),
             )
             .set_column(Column::new(
-                db.name(),
-                clients_table.name(),
+                db_name,
+                clienta_table_name,
                 "email",
                 Datatype::Varchar(255),
             ))
             .set_column(Column::new(
-                db.name(),
-                clients_table.name(),
+                db_name,
+                clienta_table_name,
                 "password",
                 Datatype::Varchar(64),
             ))
             .set_column(
-                Column::new(db.name(), clients_table.name(), "phone", Datatype::Varchar(45))
+                Column::new(db_name, clienta_table_name, "phone", Datatype::Varchar(45))
                     .set_meta_flag(METADATA_FLAG_NULLABLE)
                     .to_owned(),
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "first_name",
                     Datatype::Varchar(45),
                 )
@@ -452,8 +454,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "last_name",
                     Datatype::Varchar(45),
                 )
@@ -462,8 +464,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "is_email_verified",
                     Datatype::Tinyint(1),
                 )
@@ -473,8 +475,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "email_verification_code",
                     Datatype::Varchar(64),
                 )
@@ -483,8 +485,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "password_reset_code",
                     Datatype::Varchar(64),
                 )
@@ -493,8 +495,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    clients_table.name(),
+                    db_name,
+                    clienta_table_name,
                     "last_access",
                     Datatype::Timestamp,
                 )
@@ -505,7 +507,7 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(db.name(), clients_table.name(), "created", Datatype::Timestamp)
+                Column::new(db_name, clienta_table_name, "created", Datatype::Timestamp)
                     .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                         "current_timestamp()",
                     ))))
@@ -528,12 +530,13 @@ mod tests {
 
         //
 
-        let mut client_tokens_table = Table::new(db.name(), "client_tokens");
+        let client_tokens_table_name = "client_tokens";
+        let mut client_tokens_table = Table::new(db_name, client_tokens_table_name);
         client_tokens_table
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_tokens_table.name(),
+                    db_name,
+                    client_tokens_table_name,
                     "client_token_id",
                     Datatype::Int(10),
                 )
@@ -543,8 +546,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_tokens_table.name(),
+                    db_name,
+                    client_tokens_table_name,
                     "client_id",
                     Datatype::Int(10),
                 )
@@ -552,21 +555,21 @@ mod tests {
                 .to_owned(),
             )
             .set_column(Column::new(
-                db.name(),
-                client_tokens_table.name(),
+                db_name,
+                client_tokens_table_name,
                 "auth_token",
                 Datatype::Varchar(64),
             ))
             .set_column(Column::new(
-                db.name(),
-                client_tokens_table.name(),
+                db_name,
+                client_tokens_table_name,
                 "auth_token_expiration_date",
                 Datatype::Timestamp,
             ))
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_tokens_table.name(),
+                    db_name,
+                    client_tokens_table_name,
                     "remote_address",
                     Datatype::Varchar(64),
                 )
@@ -575,8 +578,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_tokens_table.name(),
+                    db_name,
+                    client_tokens_table_name,
                     "user_agent",
                     Datatype::Varchar(255),
                 )
@@ -585,8 +588,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_tokens_table.name(),
+                    db_name,
+                    client_tokens_table_name,
                     "last_access",
                     Datatype::Timestamp,
                 )
@@ -597,7 +600,7 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(db.name(), client_tokens_table.name(), "created", Datatype::Timestamp)
+                Column::new(db_name, client_tokens_table_name, "created", Datatype::Timestamp)
                     .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                         "current_timestamp()",
                     ))))
@@ -640,12 +643,13 @@ mod tests {
 
         //
 
-        let mut products_table = Table::new(db.name(), "products");
+        let products_table_name = "products";
+        let mut products_table = Table::new(db_name, products_table_name);
         products_table
             .set_column(
                 Column::new(
-                    db.name(),
-                    products_table.name(),
+                    db_name,
+                    products_table_name,
                     "product_id",
                     Datatype::Int(10),
                 )
@@ -654,14 +658,14 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(db.name(), products_table.name(), "name", Datatype::Varchar(255))
+                Column::new(db_name, products_table_name, "name", Datatype::Varchar(255))
                     .set_meta_flag(METADATA_FLAG_NULLABLE)
                     .to_owned(),
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    products_table.name(),
+                    db_name,
+                    products_table_name,
                     "is_enabled",
                     Datatype::Tinyint(1),
                 )
@@ -682,12 +686,13 @@ mod tests {
 
         //
 
-        let mut client_products_table = Table::new(db.name(), "client_products");
+        let client_products_table_name = "client_products";
+        let mut client_products_table = Table::new(db_name, client_products_table_name);
         client_products_table
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_products_table.name(),
+                    db_name,
+                    client_products_table_name,
                     "client_product_id",
                     Datatype::Int(10),
                 )
@@ -697,8 +702,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_products_table.name(),
+                    db_name,
+                    client_products_table_name,
                     "client_id",
                     Datatype::Int(10),
                 )
@@ -707,8 +712,8 @@ mod tests {
             )
             .set_column(
                 Column::new(
-                    db.name(),
-                    client_products_table.name(),
+                    db_name,
+                    client_products_table_name,
                     "product_id",
                     Datatype::Int(10),
                 )
