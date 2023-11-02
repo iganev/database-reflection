@@ -600,11 +600,16 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(db_name, client_tokens_table_name, "created", Datatype::Timestamp)
-                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                        "current_timestamp()",
-                    ))))
-                    .to_owned(),
+                Column::new(
+                    db_name,
+                    client_tokens_table_name,
+                    "created",
+                    Datatype::Timestamp,
+                )
+                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                    "current_timestamp()",
+                ))))
+                .to_owned(),
             );
 
         if let Some(client_token_id_col) = client_tokens_table.column("client_token_id") {
@@ -627,11 +632,16 @@ mod tests {
 
         if let Some(clients_table) = db.table("clients") {
             if let Some(client_id_col) = clients_table.column("client_id") {
-                client_tokens_table.set_constraint(Constraint::new(
-                    "fk_client_tokens_1",
-                    client_tokens_table.column("client_id").unwrap(),
-                    client_id_col,
-                ));
+                client_tokens_table.set_constraint(
+                    Constraint::new(
+                        "fk_client_tokens_1",
+                        client_tokens_table.column("client_id").unwrap(),
+                        client_id_col,
+                    )
+                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                    .to_owned(),
+                );
             }
         }
 
@@ -745,21 +755,31 @@ mod tests {
 
         if let Some(clients_table) = db.table("clients") {
             if let Some(client_id_col) = clients_table.column("client_id") {
-                client_products_table.set_constraint(Constraint::new(
-                    "fk_client_products_1",
-                    client_products_table.column("client_id").unwrap(),
-                    client_id_col,
-                ));
+                client_products_table.set_constraint(
+                    Constraint::new(
+                        "fk_client_products_1",
+                        client_products_table.column("client_id").unwrap(),
+                        client_id_col,
+                    )
+                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                    .to_owned(),
+                );
             }
         }
 
         if let Some(products_table) = db.table("products") {
             if let Some(product_id_col) = products_table.column("product_id") {
-                client_products_table.set_constraint(Constraint::new(
-                    "fk_client_products_2",
-                    client_products_table.column("product_id").unwrap(),
-                    product_id_col,
-                ));
+                client_products_table.set_constraint(
+                    Constraint::new(
+                        "fk_client_products_2",
+                        client_products_table.column("product_id").unwrap(),
+                        product_id_col,
+                    )
+                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                    .to_owned(),
+                );
             }
         }
 
