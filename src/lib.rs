@@ -245,10 +245,6 @@ impl<'n> Column<'n> {
         self
     }
 
-    pub fn database(&self) -> &str {
-        self.database
-    }
-
     pub fn table(&self) -> &str {
         self.table
     }
