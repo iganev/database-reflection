@@ -433,22 +433,14 @@ mod tests {
                     .to_owned(),
             )
             .set_column(
-                Column::new(
-                    clients_table_name,
-                    "first_name",
-                    Datatype::Varchar(45),
-                )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                Column::new(clients_table_name, "first_name", Datatype::Varchar(45))
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
-                Column::new(
-                    clients_table_name,
-                    "last_name",
-                    Datatype::Varchar(45),
-                )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+                Column::new(clients_table_name, "last_name", Datatype::Varchar(45))
+                    .set_meta_flag(METADATA_FLAG_NULLABLE)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(
@@ -479,16 +471,12 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(
-                    clients_table_name,
-                    "last_access",
-                    Datatype::Timestamp,
-                )
-                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+                Column::new(clients_table_name, "last_access", Datatype::Timestamp)
+                    .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
             )
             .set_column(
                 Column::new(clients_table_name, "created", Datatype::Timestamp)
@@ -528,13 +516,9 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(
-                    client_tokens_table_name,
-                    "client_id",
-                    Datatype::Int(10),
-                )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                Column::new(client_tokens_table_name, "client_id", Datatype::Int(10))
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             )
             .set_column(Column::new(
                 client_tokens_table_name,
@@ -565,27 +549,19 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(
-                    client_tokens_table_name,
-                    "last_access",
-                    Datatype::Timestamp,
-                )
-                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+                Column::new(client_tokens_table_name, "last_access", Datatype::Timestamp)
+                    .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
             )
             .set_column(
-                Column::new(
-                    client_tokens_table_name,
-                    "created",
-                    Datatype::Timestamp,
-                )
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+                Column::new(client_tokens_table_name, "created", Datatype::Timestamp)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                        "current_timestamp()",
+                    ))))
+                    .to_owned(),
             );
 
         if let Some(client_token_id_col) = client_tokens_table.column("client_token_id") {
@@ -633,14 +609,10 @@ mod tests {
         let mut products_table = Table::new(products_table_name);
         products_table
             .set_column(
-                Column::new(
-                    products_table_name,
-                    "product_id",
-                    Datatype::Int(10),
-                )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+                Column::new(products_table_name, "product_id", Datatype::Int(10))
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                    .to_owned(),
             )
             .set_column(
                 Column::new(products_table_name, "name", Datatype::Varchar(255))
@@ -648,14 +620,10 @@ mod tests {
                     .to_owned(),
             )
             .set_column(
-                Column::new(
-                    products_table_name,
-                    "is_enabled",
-                    Datatype::Tinyint(1),
-                )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
-                .to_owned(),
+                Column::new(products_table_name, "is_enabled", Datatype::Tinyint(1))
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
+                    .to_owned(),
             );
 
         if let Some(product_id_col) = products_table.column("product_id") {
@@ -684,22 +652,14 @@ mod tests {
                 .to_owned(),
             )
             .set_column(
-                Column::new(
-                    client_products_table_name,
-                    "client_id",
-                    Datatype::Int(10),
-                )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                Column::new(client_products_table_name, "client_id", Datatype::Int(10))
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             )
             .set_column(
-                Column::new(
-                    client_products_table_name,
-                    "product_id",
-                    Datatype::Int(10),
-                )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+                Column::new(client_products_table_name, "product_id", Datatype::Int(10))
+                    .set_meta_flag(METADATA_FLAG_UNSIGNED)
+                    .to_owned(),
             );
 
         client_products_table.set_index(Index::new(
