@@ -1,343 +1,17 @@
 pub mod metadata;
-
-use crate::metadata::with_metadata::WithMetadata;
-use indexmap::IndexMap;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::serde_as;
-use std::collections::HashMap;
-use std::rc::Rc;
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum ConstraintSide {
-    Local,
-    Foreign,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Datatype {
-    Tinyint(u32),
-    Int(u32),
-    Bigint(u32),
-    Float(u32, u32),
-    Real(u32, u32),
-
-    Date,
-    Time,
-    Datetime,
-    Timestamp,
-
-    Char(u32),
-    Varchar(u32),
-    Text(u32),
-
-    Binary(u32),
-    Varbinary(u32),
-
-    Enum(Vec<String>),
-    Set(Vec<String>),
-    Json(String),
-}
-
-impl Default for Datatype {
-    fn default() -> Self {
-        Datatype::Varchar(45)
-    }
-}
-
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum DefaultValue {
-    #[default]
-    Null,
-    Value(Value),
-}
-
-#[serde_as]
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Database<'n> {
-    name: String,
-    #[serde(borrow = "'n")]
-    tables: IndexMap<&'n str, Rc<Table<'n>>>,
-    #[serde(borrow = "'n")]
-    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
-    metadata: HashMap<String, String>,
-}
-
-impl<'n> WithMetadata for Database<'n> {
-    fn get_metadata(&self) -> &HashMap<String, String> {
-        &self.metadata
-    }
-
-    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
-        &mut self.metadata
-    }
-}
-
-impl<'n> Database<'n> {
-    pub fn new(name: impl ToString) -> Database<'n> {
-        Database {
-            name: name.to_string(),
-            ..Default::default()
-        }
-    }
-
-    pub fn name(&'n self) -> &'n str {
-        &self.name
-    }
-
-    pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
-        for (constraint_name, constraint) in table.constraints.iter() {
-            self.constraints.insert(constraint_name, constraint.clone());
-        }
-
-        self.tables.insert(table.name, Rc::new(table));
-
-        self
-    }
-
-    pub fn table(&self, key: &str) -> Option<Rc<Table<'n>>> {
-        self.tables.get(key).cloned()
-    }
-
-    pub fn constraints_by_table(
-        &self,
-        table: Rc<Table<'n>>,
-        side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint<'n>>> {
-        self.constraints
-            .values()
-            .filter(|c| {
-                if c.local.table == table.name() && (side != Some(ConstraintSide::Foreign)) {
-                    return true;
-                }
-
-                if c.foreign.table == table.name() && (side != Some(ConstraintSide::Local)) {
-                    return true;
-                }
-
-                false
-            })
-            .cloned()
-            .collect::<Vec<Rc<Constraint>>>()
-    }
-
-    pub fn constraints_by_column(
-        &self,
-        column: Rc<Column<'n>>,
-        side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint<'n>>> {
-        self.constraints
-            .values()
-            .filter(|c| {
-                if c.local == column && (side != Some(ConstraintSide::Foreign)) {
-                    return true;
-                }
-
-                if c.foreign == column && (side != Some(ConstraintSide::Local)) {
-                    return true;
-                }
-
-                false
-            })
-            .cloned()
-            .collect::<Vec<Rc<Constraint>>>()
-    }
-}
-
-#[serde_as]
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Table<'n> {
-    name: &'n str,
-    columns: IndexMap<&'n str, Rc<Column<'n>>>,
-    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
-    indexes: IndexMap<&'n str, Index<'n>>,
-    metadata: HashMap<String, String>,
-}
-
-impl<'n> WithMetadata for Table<'n> {
-    fn get_metadata(&self) -> &HashMap<String, String> {
-        &self.metadata
-    }
-
-    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
-        &mut self.metadata
-    }
-}
-
-impl<'n> Table<'n> {
-    pub fn new(name: &'n str) -> Table<'n> {
-        Table {
-            name,
-            ..Default::default()
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        self.name
-    }
-
-    pub fn set_column(&mut self, column: Column<'n>) -> &mut Table<'n> {
-        self.columns.insert(column.name, Rc::new(column));
-
-        self
-    }
-
-    pub fn column(&self, key: &str) -> Option<Rc<Column<'n>>> {
-        self.columns.get(key).cloned()
-    }
-
-    pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
-        self.constraints
-            .insert(constraint.name, Rc::new(constraint));
-
-        self
-    }
-
-    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint<'n>>> {
-        self.constraints.get(key).cloned()
-    }
-
-    pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
-        self.indexes.insert(index.name, index);
-
-        self
-    }
-
-    pub fn index(&self, key: &str) -> Option<&Index> {
-        self.indexes.get(key)
-    }
-}
-
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Column<'n> {
-    table: &'n str,
-    name: &'n str,
-    datatype: Datatype,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    default: Option<DefaultValue>,
-    metadata: HashMap<String, String>,
-}
-
-impl<'n> WithMetadata for Column<'n> {
-    fn get_metadata(&self) -> &HashMap<String, String> {
-        &self.metadata
-    }
-
-    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
-        &mut self.metadata
-    }
-}
-
-impl<'n> Column<'n> {
-    pub fn new(table: &'n str, name: &'n str, datatype: Datatype) -> Column<'n> {
-        Column {
-            table,
-            name,
-            datatype,
-            ..Default::default()
-        }
-    }
-
-    pub fn set_default(&mut self, value: Option<DefaultValue>) -> &mut Column<'n> {
-        self.default = value;
-        self
-    }
-
-    pub fn table(&self) -> &str {
-        self.table
-    }
-
-    pub fn name(&self) -> &str {
-        self.name
-    }
-
-    pub fn default(&self) -> Option<DefaultValue> {
-        self.default.clone()
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Index<'n> {
-    name: &'n str,
-    column: Rc<Column<'n>>, //&'n str,
-    primary: bool,
-    unique: bool,
-}
-
-impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: Rc<Column<'n>>, primary: bool, unique: bool) -> Self {
-        Index {
-            name,
-            column,
-            primary,
-            unique,
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        self.name
-    }
-
-    pub fn column(&self) -> &Column {
-        &self.column
-    }
-
-    pub fn primary(&self) -> bool {
-        self.primary
-    }
-
-    pub fn unique(&self) -> bool {
-        self.unique
-    }
-}
-
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Constraint<'n> {
-    name: &'n str,
-    local: Rc<Column<'n>>,
-    foreign: Rc<Column<'n>>,
-    metadata: HashMap<String, String>,
-}
-
-impl<'n> WithMetadata for Constraint<'n> {
-    fn get_metadata(&self) -> &HashMap<String, String> {
-        &self.metadata
-    }
-
-    fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
-        &mut self.metadata
-    }
-}
-
-impl<'n> Constraint<'n> {
-    pub fn new(name: &'n str, local: Rc<Column<'n>>, foreign: Rc<Column<'n>>) -> Self {
-        Constraint {
-            name,
-            local,
-            foreign,
-            ..Default::default()
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        self.name
-    }
-
-    pub fn local(&self) -> &Column {
-        &self.local
-    }
-
-    pub fn foreign(&self) -> &Column {
-        &self.foreign
-    }
-}
+pub mod reflection;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
+    use crate::metadata::with_metadata::WithMetadata;
     use crate::metadata::consts::*;
+    use crate::reflection::column::Column;
+    use crate::reflection::constraint::Constraint;
+    use crate::reflection::database::Database;
+    use crate::reflection::datatypes::{Datatype, DefaultValue};
+    use crate::reflection::index::Index;
+    use crate::reflection::table::Table;
 
     fn get_mock_db<'n>() -> Database<'n> {
         // CREATE TABLE `clients` (
@@ -735,7 +409,7 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
             );
         }
 
@@ -747,7 +421,7 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
             );
         }
 
@@ -765,7 +439,7 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
             );
         }
 
@@ -780,7 +454,7 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local.table, c.local.name, c.foreign.table, c.foreign.name
+                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
             );
         }
 
