@@ -4,8 +4,8 @@ pub mod reflection;
 #[cfg(test)]
 mod tests {
     // use super::*;
-    use crate::metadata::with_metadata::WithMetadata;
     use crate::metadata::consts::*;
+    use crate::metadata::with_metadata::WithMetadata;
     use crate::reflection::column::Column;
     use crate::reflection::constraint::Constraint;
     use crate::reflection::database::Database;
@@ -409,7 +409,10 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
+                c.local().table(),
+                c.local().name(),
+                c.foreign().table(),
+                c.foreign().name()
             );
         }
 
@@ -421,7 +424,10 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
+                c.local().table(),
+                c.local().name(),
+                c.foreign().table(),
+                c.foreign().name()
             );
         }
 
@@ -439,7 +445,10 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
+                c.local().table(),
+                c.local().name(),
+                c.foreign().table(),
+                c.foreign().name()
             );
         }
 
@@ -454,7 +463,10 @@ mod tests {
         {
             println!(
                 "Constraint {}.{} -> {}.{}",
-                c.local().table(), c.local().name(), c.foreign().table(), c.foreign().name()
+                c.local().table(),
+                c.local().name(),
+                c.foreign().table(),
+                c.foreign().name()
             );
         }
 

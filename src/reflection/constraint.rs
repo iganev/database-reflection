@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 use crate::metadata::with_metadata::WithMetadata;
 use crate::reflection::column::Column;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ConstraintSide {

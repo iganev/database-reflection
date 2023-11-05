@@ -1,12 +1,12 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use indexmap::IndexMap;
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use crate::metadata::with_metadata::WithMetadata;
 use crate::reflection::column::Column;
 use crate::reflection::constraint::Constraint;
 use crate::reflection::index::Index;
+use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 #[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]

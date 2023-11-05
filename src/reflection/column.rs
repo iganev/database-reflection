@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 use crate::metadata::with_metadata::WithMetadata;
 use crate::reflection::datatypes::{Datatype, DefaultValue};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Column<'n> {
-    pub(super)table: &'n str,
+    pub(super) table: &'n str,
     pub(super) name: &'n str,
     datatype: Datatype,
     #[serde(skip_serializing_if = "Option::is_none")]

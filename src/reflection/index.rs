@@ -1,6 +1,6 @@
-use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 use crate::reflection::column::Column;
+use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index<'n> {
