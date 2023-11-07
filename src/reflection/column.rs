@@ -46,6 +46,10 @@ impl<'n> Column<'n> {
         self.name
     }
 
+    pub fn datatype(&self) -> &Datatype {
+        &self.datatype
+    }
+
     pub fn default(&self) -> Option<DefaultValue> {
         self.default.clone()
     }

@@ -42,7 +42,7 @@ impl<'n> Database<'n> {
     }
 
     pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
-        for (constraint_name, constraint) in table.constraints().iter() {
+        for (constraint_name, constraint) in table.constraints() {
             self.constraints.insert(constraint_name, constraint.clone());
         }
 
@@ -53,6 +53,14 @@ impl<'n> Database<'n> {
 
     pub fn table(&self, key: &str) -> Option<Rc<Table<'n>>> {
         self.tables.get(key).cloned()
+    }
+
+    pub fn tables(&self) -> indexmap::map::Iter<'_, &'n str, Rc<Table<'n>>> {
+        self.tables.iter()
+    }
+
+    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, &'n str, Rc<Constraint<'n>>> {
+        self.constraints.iter()
     }
 
     pub fn constraints_by_table(

@@ -50,6 +50,10 @@ impl<'n> Table<'n> {
         self.columns.get(key).cloned()
     }
 
+    pub fn columns(&self) -> indexmap::map::Iter<'_, &'n str, Rc<Column<'n>>> {
+        self.columns.iter()
+    }
+
     pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
         self.constraints
             .insert(constraint.name, Rc::new(constraint));
@@ -61,8 +65,8 @@ impl<'n> Table<'n> {
         self.constraints.get(key).cloned()
     }
 
-    pub fn constraints(&self) -> &HashMap<&'n str, Rc<Constraint<'n>>> {
-        &self.constraints
+    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, &'n str, Rc<Constraint<'n>>> {
+        self.constraints.iter()
     }
 
     pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
@@ -73,5 +77,9 @@ impl<'n> Table<'n> {
 
     pub fn index(&self, key: &str) -> Option<&Index> {
         self.indexes.get(key)
+    }
+
+    pub fn indexes(&self) -> indexmap::map::Iter<'_, &'n str, Index<'n>> {
+        self.indexes.iter()
     }
 }
