@@ -5,13 +5,13 @@ pub mod reflection;
 mod tests {
     // use super::*;
     use crate::metadata::consts::*;
-    use crate::metadata::with_metadata::WithMetadata;
-    use crate::reflection::column::Column;
-    use crate::reflection::constraint::Constraint;
-    use crate::reflection::database::Database;
-    use crate::reflection::datatypes::{Datatype, DefaultValue};
-    use crate::reflection::index::Index;
-    use crate::reflection::table::Table;
+    use crate::metadata::WithMetadata;
+    use crate::reflection::Column;
+    use crate::reflection::Constraint;
+    use crate::reflection::Database;
+    use crate::reflection::{Datatype, DefaultValue};
+    use crate::reflection::Index;
+    use crate::reflection::Table;
 
     fn get_mock_db<'n>() -> Database<'n> {
         // CREATE TABLE `clients` (

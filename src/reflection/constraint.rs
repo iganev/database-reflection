@@ -1,4 +1,4 @@
-use crate::metadata::with_metadata::WithMetadata;
+use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

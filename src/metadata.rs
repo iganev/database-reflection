@@ -1,2 +1,4 @@
 pub mod consts;
-pub mod with_metadata;
+mod with_metadata;
+
+pub use crate::metadata::with_metadata::WithMetadata;
