@@ -9,9 +9,9 @@ mod tests {
     use crate::reflection::Column;
     use crate::reflection::Constraint;
     use crate::reflection::Database;
-    use crate::reflection::{Datatype, DefaultValue};
     use crate::reflection::Index;
     use crate::reflection::Table;
+    use crate::reflection::{Datatype, DefaultValue};
 
     fn get_mock_db<'n>() -> Database<'n> {
         // CREATE TABLE `clients` (
