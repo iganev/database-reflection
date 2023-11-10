@@ -4,11 +4,9 @@ use crate::reflection::constraint::{Constraint, ConstraintSide};
 use crate::reflection::table::Table;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[serde_as]
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database<'n> {
     pub(crate) name: String,
