@@ -480,4 +480,14 @@ mod tests {
 
         println!("{}", serde_json::to_string(&db).unwrap());
     }
+
+    #[test]
+    fn datatypes_test() {
+        Datatype::try_from("int(10)");
+        Datatype::try_from("float(4,2)");
+        Datatype::try_from("varchar(45)");
+        Datatype::try_from("text");
+        Datatype::try_from("tinyint(1)");
+        Datatype::try_from("timestamp");
+    }
 }
