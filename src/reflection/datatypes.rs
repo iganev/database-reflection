@@ -48,17 +48,21 @@ impl TryFrom<&str> for Datatype {
     type Error = ParseDatatypeError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if value.contains("(") && value.contains(")") {
+        return if value.contains('(') && value.contains(')') {
             // type with length information
 
             let (type_group, type_length) = value
-                .split_once("(")
-                .map(|s| (s.0, s.1.rsplit_once(")").unwrap_or(("", "")).0))
+                .split_once('(')
+                .map(|s| (s.0, s.1.rsplit_once(')').unwrap_or(("", "")).0))
                 .ok_or(ParseDatatypeError)?;
 
-            return match type_group {
+            match type_group {
                 "set" | "enum" => {
-                    let options = type_length.split(",").map(|s| s.to_string()).collect();
+                    let trim_match: &[_] = &['"', '\''];
+                    let options = type_length
+                        .split(',')
+                        .map(|s| s.trim_matches(trim_match).to_string())
+                        .collect();
 
                     return if type_group == "set" {
                         Ok(Datatype::Set(options))
@@ -69,7 +73,7 @@ impl TryFrom<&str> for Datatype {
                 "float" | "real" => {
                     let (left, right) = {
                         let v = type_length
-                            .splitn(2, ",")
+                            .splitn(2, ',')
                             .map(|s| s.parse::<u32>().unwrap_or_default())
                             .collect::<Vec<u32>>();
 
@@ -105,19 +109,19 @@ impl TryFrom<&str> for Datatype {
                         Err(ParseDatatypeError)
                     }
                 }
-            };
+            }
         } else {
             // fixed length type
 
-            return match value {
+            match value {
                 "text" => Ok(Datatype::Text(65535)),
                 "date" => Ok(Datatype::Date),
                 "time" => Ok(Datatype::Time),
                 "datetime" => Ok(Datatype::Datetime),
                 "timestamp" => Ok(Datatype::Timestamp),
-                _ => Err(ParseDatatypeError)
-            };
-        }
+                _ => Err(ParseDatatypeError),
+            }
+        };
     }
 }
 
