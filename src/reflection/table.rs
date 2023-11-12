@@ -8,15 +8,15 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Table<'n> {
-    pub(super) name: &'n str,
-    columns: IndexMap<&'n str, Rc<Column<'n>>>,
-    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
-    indexes: IndexMap<&'n str, Index<'n>>,
+pub struct Table {
+    pub(super) name: Rc<String>,
+    columns: IndexMap<Rc<String>, Rc<Column>>,
+    constraints: HashMap<Rc<String>, Rc<Constraint>>,
+    indexes: IndexMap<Rc<String>, Index>,
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Table<'n> {
+impl<'n> WithMetadata for Table {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -26,58 +26,58 @@ impl<'n> WithMetadata for Table<'n> {
     }
 }
 
-impl<'n> Table<'n> {
-    pub fn new(name: &'n str) -> Table<'n> {
+impl Table {
+    pub fn new(name: impl ToString) -> Table {
         Table {
-            name,
+            name: Rc::new(name.to_string()),
             ..Default::default()
         }
     }
 
-    pub fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> Rc<String> {
+        self.name.clone()
     }
 
-    pub fn set_column(&mut self, column: Column<'n>) -> &mut Table<'n> {
-        self.columns.insert(column.name, Rc::new(column));
+    pub fn set_column(&mut self, column: Column) -> &mut Table {
+        self.columns.insert(column.name(), Rc::new(column));
 
         self
     }
 
-    pub fn column(&self, key: &str) -> Option<Rc<Column<'n>>> {
-        self.columns.get(key).cloned()
+    pub fn column(&self, key: &str) -> Option<Rc<Column>> {
+        self.columns.get(&key.to_string()).cloned()
     }
 
-    pub fn columns(&self) -> indexmap::map::Iter<'_, &'n str, Rc<Column<'n>>> {
+    pub fn columns(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Column>> {
         self.columns.iter()
     }
 
-    pub fn set_constraint(&mut self, constraint: Constraint<'n>) -> &mut Table<'n> {
+    pub fn set_constraint(&mut self, constraint: Constraint) -> &mut Table {
         self.constraints
-            .insert(constraint.name, Rc::new(constraint));
+            .insert(constraint.name(), Rc::new(constraint));
 
         self
     }
 
-    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint<'n>>> {
-        self.constraints.get(key).cloned()
+    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint>> {
+        self.constraints.get(&key.to_string()).cloned()
     }
 
-    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, &'n str, Rc<Constraint<'n>>> {
+    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
         self.constraints.iter()
     }
 
-    pub fn set_index(&mut self, index: Index<'n>) -> &mut Table<'n> {
-        self.indexes.insert(index.name, index);
+    pub fn set_index(&mut self, index: Index) -> &mut Table {
+        self.indexes.insert(index.name(), index);
 
         self
     }
 
     pub fn index(&self, key: &str) -> Option<&Index> {
-        self.indexes.get(key)
+        self.indexes.get(&key.to_string())
     }
 
-    pub fn indexes(&self) -> indexmap::map::Iter<'_, &'n str, Index<'n>> {
+    pub fn indexes(&self) -> indexmap::map::Iter<'_, Rc<String>, Index> {
         self.indexes.iter()
     }
 }

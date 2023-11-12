@@ -3,25 +3,25 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Index<'n> {
-    pub(super) name: &'n str,
-    column: Rc<Column<'n>>, //&'n str,
+pub struct Index {
+    pub(super) name: Rc<String>,
+    column: Rc<Column>,
     primary: bool,
     unique: bool,
 }
 
-impl<'n> Index<'n> {
-    pub fn new(name: &'n str, column: Rc<Column<'n>>, primary: bool, unique: bool) -> Self {
+impl<'n> Index {
+    pub fn new(name: impl ToString, column: Rc<Column>, primary: bool, unique: bool) -> Self {
         Index {
-            name,
+            name: Rc::new(name.to_string()),
             column,
             primary,
             unique,
         }
     }
 
-    pub fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> Rc<String> {
+        self.name.clone()
     }
 
     pub fn column(&self) -> &Column {

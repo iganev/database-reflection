@@ -8,16 +8,14 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Database<'n> {
+pub struct Database {
     pub(crate) name: String,
-    #[serde(borrow = "'n")]
-    tables: IndexMap<&'n str, Rc<Table<'n>>>,
-    #[serde(borrow = "'n")]
-    constraints: HashMap<&'n str, Rc<Constraint<'n>>>,
+    tables: IndexMap<Rc<String>, Rc<Table>>,
+    constraints: HashMap<Rc<String>, Rc<Constraint>>,
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Database<'n> {
+impl<'n> WithMetadata for Database {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -27,45 +25,45 @@ impl<'n> WithMetadata for Database<'n> {
     }
 }
 
-impl<'n> Database<'n> {
-    pub fn new(name: impl ToString) -> Database<'n> {
+impl Database {
+    pub fn new(name: impl ToString) -> Database {
         Database {
             name: name.to_string(),
             ..Default::default()
         }
     }
 
-    pub fn name(&'n self) -> &'n str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn set_table(&mut self, table: Table<'n>) -> &mut Database<'n> {
+    pub fn set_table(&mut self, table: Table) -> &mut Database {
         for (constraint_name, constraint) in table.constraints() {
-            self.constraints.insert(constraint_name, constraint.clone());
+            self.constraints.insert(constraint_name.clone(), constraint.clone());
         }
 
-        self.tables.insert(table.name, Rc::new(table));
+        self.tables.insert(table.name(), Rc::new(table));
 
         self
     }
 
-    pub fn table(&self, key: &str) -> Option<Rc<Table<'n>>> {
-        self.tables.get(key).cloned()
+    pub fn table(&self, key: &str) -> Option<Rc<Table>> {
+        self.tables.get(&key.to_string()).cloned()
     }
 
-    pub fn tables(&self) -> indexmap::map::Iter<'_, &'n str, Rc<Table<'n>>> {
+    pub fn tables(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Table>> {
         self.tables.iter()
     }
 
-    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, &'n str, Rc<Constraint<'n>>> {
+    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
         self.constraints.iter()
     }
 
     pub fn constraints_by_table(
         &self,
-        table: Rc<Table<'n>>,
+        table: Rc<Table>,
         side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint<'n>>> {
+    ) -> Vec<Rc<Constraint>> {
         self.constraints
             .values()
             .filter(|c| {
@@ -85,9 +83,9 @@ impl<'n> Database<'n> {
 
     pub fn constraints_by_column(
         &self,
-        column: Rc<Column<'n>>,
+        column: Rc<Column>,
         side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint<'n>>> {
+    ) -> Vec<Rc<Constraint>> {
         self.constraints
             .values()
             .filter(|c| {

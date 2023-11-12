@@ -11,14 +11,14 @@ pub enum ConstraintSide {
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct Constraint<'n> {
-    pub(super) name: &'n str,
-    local: Rc<Column<'n>>,
-    foreign: Rc<Column<'n>>,
+pub struct Constraint {
+    pub(super) name: Rc<String>,
+    local: Rc<Column>,
+    foreign: Rc<Column>,
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Constraint<'n> {
+impl<'n> WithMetadata for Constraint {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -28,18 +28,18 @@ impl<'n> WithMetadata for Constraint<'n> {
     }
 }
 
-impl<'n> Constraint<'n> {
-    pub fn new(name: &'n str, local: Rc<Column<'n>>, foreign: Rc<Column<'n>>) -> Self {
+impl<'n> Constraint {
+    pub fn new(name: impl ToString, local: Rc<Column>, foreign: Rc<Column>) -> Self {
         Constraint {
-            name,
+            name: Rc::new(name.to_string()),
             local,
             foreign,
             ..Default::default()
         }
     }
 
-    pub fn name(&self) -> &str {
-        self.name
+    pub fn name(&self) -> Rc<String> {
+        self.name.clone()
     }
 
     pub fn local(&self) -> &Column {
