@@ -18,7 +18,7 @@ pub struct Constraint {
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Constraint {
+impl WithMetadata for Constraint {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -28,7 +28,7 @@ impl<'n> WithMetadata for Constraint {
     }
 }
 
-impl<'n> Constraint {
+impl Constraint {
     pub fn new(name: impl ToString, local: Rc<Column>, foreign: Rc<Column>) -> Self {
         Constraint {
             name: Rc::new(name.to_string()),

@@ -16,4 +16,6 @@ pub const METADATA_FLAG_UNSIGNED: &str = "unsigned";
 #[allow(dead_code)]
 pub const METADATA_FLAG_NULLABLE: &str = "nullable";
 #[allow(dead_code)]
+pub const METADATA_FLAG_PRIMARY: &str = "primary";
+#[allow(dead_code)]
 pub const METADATA_FLAG_AUTO_INCREMENT: &str = "auto_increment";

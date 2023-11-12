@@ -1,3 +1,4 @@
+use crate::metadata::consts::METADATA_FLAG_PRIMARY;
 use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
 use crate::reflection::constraint::Constraint;
@@ -6,17 +7,19 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::slice::Iter;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table {
     pub(super) name: Rc<String>,
+    primary_key: Vec<Rc<String>>,
     columns: IndexMap<Rc<String>, Rc<Column>>,
     constraints: HashMap<Rc<String>, Rc<Constraint>>,
     indexes: IndexMap<Rc<String>, Index>,
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Table {
+impl WithMetadata for Table {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -39,6 +42,10 @@ impl Table {
     }
 
     pub fn set_column(&mut self, column: Column) -> &mut Table {
+        if column.meta_flag(METADATA_FLAG_PRIMARY) && !self.primary_key.contains(&column.name()) {
+            self.primary_key.push(column.name());
+        }
+
         self.columns.insert(column.name(), Rc::new(column));
 
         self
@@ -68,6 +75,10 @@ impl Table {
     }
 
     pub fn set_index(&mut self, index: Index) -> &mut Table {
+        if index.primary() && !self.primary_key.contains(&index.column().name()) {
+            self.primary_key.push(index.column().name());
+        }
+
         self.indexes.insert(index.name(), index);
 
         self
@@ -79,5 +90,32 @@ impl Table {
 
     pub fn indexes(&self) -> indexmap::map::Iter<'_, Rc<String>, Index> {
         self.indexes.iter()
+    }
+
+    pub fn primary_key_count(&self) -> usize {
+        self.primary_key.len()
+    }
+
+    pub fn primary_key(&self) -> Option<Rc<String>> {
+        self.primary_key.first().cloned()
+    }
+
+    pub fn primary_key_column(&self) -> Option<Rc<Column>> {
+        self.primary_key
+            .first()
+            .map(|k| self.columns.get(k).cloned())
+            .unwrap()
+    }
+
+    pub fn primary_keys(&self) -> Iter<'_, Rc<String>> {
+        self.primary_key.iter()
+    }
+
+    pub fn primary_key_columns(&self) -> Vec<Rc<Column>> {
+        self.columns
+            .iter()
+            .filter(|kv| self.primary_key.contains(kv.0))
+            .map(|kv| kv.1.clone())
+            .collect::<Vec<Rc<Column>>>()
     }
 }

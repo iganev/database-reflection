@@ -14,7 +14,7 @@ pub struct Column {
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Column {
+impl WithMetadata for Column {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }

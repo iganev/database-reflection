@@ -10,7 +10,7 @@ pub struct Index {
     unique: bool,
 }
 
-impl<'n> Index {
+impl Index {
     pub fn new(name: impl ToString, column: Rc<Column>, primary: bool, unique: bool) -> Self {
         Index {
             name: Rc::new(name.to_string()),

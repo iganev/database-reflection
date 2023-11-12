@@ -15,7 +15,7 @@ pub struct Database {
     metadata: HashMap<String, String>,
 }
 
-impl<'n> WithMetadata for Database {
+impl WithMetadata for Database {
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
@@ -39,7 +39,8 @@ impl Database {
 
     pub fn set_table(&mut self, table: Table) -> &mut Database {
         for (constraint_name, constraint) in table.constraints() {
-            self.constraints.insert(constraint_name.clone(), constraint.clone());
+            self.constraints
+                .insert(constraint_name.clone(), constraint.clone());
         }
 
         self.tables.insert(table.name(), Rc::new(table));
