@@ -14,7 +14,7 @@ pub enum ConstraintSide {
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct ConstraintKeyPair {
     pub local: Rc<Column>,
-    pub foreign: Rc<Column>
+    pub foreign: Rc<Column>,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -72,5 +72,4 @@ impl Constraint {
     pub fn key_pairs_count(&self) -> usize {
         self.key_pairs.len()
     }
-
 }
