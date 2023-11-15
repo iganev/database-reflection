@@ -11,7 +11,7 @@ use std::slice::Iter;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table {
-    pub(super) name: Rc<String>,
+    name: Rc<String>,
     primary_key: Vec<Rc<String>>,
     columns: IndexMap<Rc<String>, Rc<Column>>,
     constraints: HashMap<Rc<String>, Rc<Constraint>>,

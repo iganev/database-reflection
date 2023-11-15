@@ -9,7 +9,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database {
-    pub(crate) name: String,
+    name: String,
     tables: IndexMap<Rc<String>, Rc<Table>>,
     constraints: HashMap<Rc<String>, Rc<Constraint>>,
     metadata: HashMap<String, String>,

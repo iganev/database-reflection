@@ -6,8 +6,8 @@ use std::rc::Rc;
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Column {
-    pub(super) table: Rc<String>,
-    pub(super) name: Rc<String>,
+    table: Rc<String>,
+    name: Rc<String>,
     datatype: Datatype,
     #[serde(skip_serializing_if = "Option::is_none")]
     default: Option<DefaultValue>,

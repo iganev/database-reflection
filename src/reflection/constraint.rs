@@ -19,9 +19,7 @@ pub struct ConstraintKeyPair {
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Constraint {
-    pub(super) name: Rc<String>,
-    // local: Rc<Column>,
-    // foreign: Rc<Column>,
+    name: Rc<String>,
     key_pairs: Vec<ConstraintKeyPair>,
     metadata: HashMap<String, String>,
 }
@@ -40,8 +38,6 @@ impl Constraint {
     pub fn new(name: impl ToString, local: Rc<Column>, foreign: Rc<Column>) -> Self {
         Constraint {
             name: Rc::new(name.to_string()),
-            // local,
-            // foreign,
             key_pairs: vec![ConstraintKeyPair { local, foreign }],
             ..Default::default()
         }

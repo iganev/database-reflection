@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index {
-    pub(super) name: Rc<String>,
+    name: Rc<String>,
     column: Rc<Column>,
     primary: bool,
     unique: bool,
