@@ -13,7 +13,7 @@ mod tests {
     use crate::reflection::Table;
     use crate::reflection::{Datatype, DefaultValue};
 
-    fn get_mock_db<'n>() -> Database {
+    fn get_mock_db() -> Database {
         // CREATE TABLE `clients` (
         // `client_id` int(10) UNSIGNED NOT NULL,
         // `email` varchar(255) NOT NULL,
