@@ -16,16 +16,19 @@ pub struct Database {
 }
 
 impl WithMetadata for Database {
+    /// Borrow meadata container for reading
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
 
+    /// Borrow meadata container for writing
     fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
         &mut self.metadata
     }
 }
 
 impl Database {
+    /// Create a new database with a name
     pub fn new(name: impl ToString) -> Database {
         Database {
             name: name.to_string(),
@@ -33,10 +36,12 @@ impl Database {
         }
     }
 
+    /// Get database name
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Add a table to the database
     pub fn set_table(&mut self, table: Table) -> &mut Database {
         for (constraint_name, constraint) in table.constraints() {
             self.constraints
@@ -48,18 +53,22 @@ impl Database {
         self
     }
 
+    /// Get a table by name
     pub fn table(&self, key: &str) -> Option<Rc<Table>> {
         self.tables.get(&key.to_string()).cloned()
     }
 
+    /// Get tables iterator
     pub fn tables(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Table>> {
         self.tables.iter()
     }
 
+    /// Get constraints iterator
     pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
         self.constraints.iter()
     }
 
+    /// Search for constraints by local or foreign table name
     pub fn constraints_by_table(
         &self,
         table: Rc<Table>,
@@ -82,6 +91,7 @@ impl Database {
             .collect::<Vec<Rc<Constraint>>>()
     }
 
+    /// Search for constraints by local or foreign column
     pub fn constraints_by_column(
         &self,
         column: Rc<Column>,
