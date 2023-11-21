@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+/// Basic SQL datatypes, defaults to VARCHAR(45)
 pub enum Datatype {
     Tinyint(u32),
     Int(u32),
@@ -127,6 +128,7 @@ impl TryFrom<&str> for Datatype {
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+/// Default value container
 pub enum DefaultValue {
     #[default]
     Null,
