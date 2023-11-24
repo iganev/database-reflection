@@ -79,6 +79,14 @@ impl Table {
         self.constraints.get(&key.to_string()).cloned()
     }
 
+    /// Find a constraint by local column name
+    pub fn constraint_by_column_name(&self, column_name: Rc<String>) -> Option<Rc<Constraint>> {
+        self.constraints
+            .iter()
+            .find(|(_, c)| c.local().name() == column_name)
+            .map(|(_, c)| c.clone())
+    }
+
     /// Get constraints iterator
     pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
         self.constraints.iter()
