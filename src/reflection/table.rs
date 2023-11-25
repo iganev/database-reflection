@@ -116,6 +116,14 @@ impl Table {
         self.indexes.get(&key.to_string())
     }
 
+    /// Find an index by column name
+    pub fn index_by_column_name(&self, column_name: Rc<String>) -> Option<Index> {
+        self.indexes
+            .iter()
+            .find(|(_, c)| c.column().name() == column_name)
+            .map(|(_, c)| c.clone())
+    }
+
     /// Get indexes iterator
     pub fn indexes(&self) -> indexmap::map::Iter<'_, Rc<String>, Index> {
         self.indexes.iter()
