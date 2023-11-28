@@ -124,6 +124,14 @@ impl Table {
             .map(|(_, c)| c.clone())
     }
 
+    /// Find an index by column
+    pub fn index_by_column(&self, column: &Column) -> Option<Index> {
+        self.indexes
+            .iter()
+            .find(|(_, c)| c.column() == column)
+            .map(|(_, c)| c.clone())
+    }
+
     /// Get indexes iterator
     pub fn indexes(&self) -> indexmap::map::Iter<'_, Rc<String>, Index> {
         self.indexes.iter()
