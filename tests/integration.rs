@@ -7,7 +7,7 @@ use database_reflection::reflection::Index;
 use database_reflection::reflection::Table;
 use database_reflection::reflection::{Datatype, DefaultValue};
 
-fn get_mock_db () -> Database {
+fn get_mock_db() -> Database {
     // CREATE TABLE `clients` (
     // `client_id` int(10) UNSIGNED NOT NULL,
     // `email` varchar(255) NOT NULL,
@@ -116,9 +116,9 @@ fn get_mock_db () -> Database {
                 "is_email_verified",
                 Datatype::Tinyint(1),
             )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
+            .to_owned(),
         )
         .set_column(
             Column::new(
@@ -126,8 +126,8 @@ fn get_mock_db () -> Database {
                 "email_verification_code",
                 Datatype::Varchar(64),
             )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_NULLABLE)
+            .to_owned(),
         )
         .set_column(
             Column::new(
@@ -135,8 +135,8 @@ fn get_mock_db () -> Database {
                 "password_reset_code",
                 Datatype::Varchar(64),
             )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_NULLABLE)
+            .to_owned(),
         )
         .set_column(
             Column::new(clients_table_name, "last_access", Datatype::Timestamp)
@@ -179,9 +179,9 @@ fn get_mock_db () -> Database {
                 "client_token_id",
                 Datatype::Int(10),
             )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .to_owned(),
         )
         .set_column(
             Column::new(client_tokens_table_name, "client_id", Datatype::Int(10))
@@ -204,8 +204,8 @@ fn get_mock_db () -> Database {
                 "remote_address",
                 Datatype::Varchar(64),
             )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_NULLABLE)
+            .to_owned(),
         )
         .set_column(
             Column::new(
@@ -213,8 +213,8 @@ fn get_mock_db () -> Database {
                 "user_agent",
                 Datatype::Varchar(255),
             )
-                .set_meta_flag(METADATA_FLAG_NULLABLE)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_NULLABLE)
+            .to_owned(),
         )
         .set_column(
             Column::new(client_tokens_table_name, "last_access", Datatype::Timestamp)
@@ -258,9 +258,9 @@ fn get_mock_db () -> Database {
                     client_tokens_table.column("client_id").unwrap(),
                     client_id_col,
                 )
-                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                    .to_owned(),
+                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                .to_owned(),
             );
         }
     }
@@ -315,9 +315,9 @@ fn get_mock_db () -> Database {
                 "client_product_id",
                 Datatype::Int(10),
             )
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .to_owned(),
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .to_owned(),
         )
         .set_column(
             Column::new(client_products_table_name, "client_id", Datatype::Int(10))
@@ -360,9 +360,9 @@ fn get_mock_db () -> Database {
                     client_products_table.column("client_id").unwrap(),
                     client_id_col,
                 )
-                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                    .to_owned(),
+                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                .to_owned(),
             );
         }
     }
@@ -375,9 +375,9 @@ fn get_mock_db () -> Database {
                     client_products_table.column("product_id").unwrap(),
                     product_id_col,
                 )
-                    .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                    .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                    .to_owned(),
+                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                .to_owned(),
             );
         }
     }
