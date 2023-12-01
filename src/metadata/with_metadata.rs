@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub trait WithMetadata {
-    /// Borrow meadata container for reading
+    /// Borrow metadata container for reading
     fn get_metadata(&self) -> &HashMap<String, String>;
 
     /// Borrow metadata container for writing

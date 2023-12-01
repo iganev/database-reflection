@@ -15,7 +15,7 @@ pub struct Column {
 }
 
 impl WithMetadata for Column {
-    /// Borrow meadata container for reading
+    /// Borrow metadata container for reading
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }

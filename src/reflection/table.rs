@@ -20,12 +20,12 @@ pub struct Table {
 }
 
 impl WithMetadata for Table {
-    /// Borrow meadata container for reading
+    /// Borrow metadata container for reading
     fn get_metadata(&self) -> &HashMap<String, String> {
         &self.metadata
     }
 
-    /// Borrow meadata container for writing
+    /// Borrow metadata container for writing
     fn get_metadata_mut(&mut self) -> &mut HashMap<String, String> {
         &mut self.metadata
     }
