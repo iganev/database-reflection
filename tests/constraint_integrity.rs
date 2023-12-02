@@ -1,5 +1,5 @@
-use std::rc::Rc;
 use database_reflection::reflection::{Column, Constraint, Datatype};
+use std::rc::Rc;
 
 #[test]
 fn test_constraint_integrity() {
@@ -10,6 +10,9 @@ fn test_constraint_integrity() {
 
     assert_eq!(constraint.name(), String::from("fk_local_1").into());
     assert_eq!(constraint.local().name(), String::from("local_id").into());
-    assert_eq!(constraint.foreign().name(), String::from("foreign_id").into());
+    assert_eq!(
+        constraint.foreign().name(),
+        String::from("foreign_id").into()
+    );
     assert_eq!(constraint.key_pairs_count(), 1);
 }
