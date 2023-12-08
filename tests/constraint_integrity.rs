@@ -1,12 +1,15 @@
 use database_reflection::reflection::{Column, Constraint, Datatype};
 use std::rc::Rc;
+use database_reflection::metadata::consts::{METADATA_CASCADE, METADATA_ON_DELETE, METADATA_ON_UPDATE};
+use database_reflection::metadata::WithMetadata;
 
 #[test]
 fn test_constraint_integrity() {
     let column_local = Rc::new(Column::new("local", "local_id", Datatype::Int(10)));
     let column_foreign = Rc::new(Column::new("foreign", "foreign_id", Datatype::Int(10)));
 
-    let constraint = Constraint::new("fk_local_1", column_local, column_foreign);
+    let mut constraint = Constraint::new("fk_local_1", column_local, column_foreign);
+    constraint.set_meta(METADATA_ON_DELETE, METADATA_CASCADE);
 
     assert_eq!(constraint.name(), String::from("fk_local_1").into());
     assert_eq!(constraint.local().name(), String::from("local_id").into());
@@ -14,5 +17,15 @@ fn test_constraint_integrity() {
         constraint.foreign().name(),
         String::from("foreign_id").into()
     );
+    assert_eq!(constraint.meta(METADATA_ON_DELETE), Some(METADATA_CASCADE.to_string()));
+
     assert_eq!(constraint.key_pairs_count(), 1);
+
+    let column_local = Rc::new(Column::new("local", "another_local_id", Datatype::Int(10)));
+    let column_foreign = Rc::new(Column::new("foreign", "another_foreign_id", Datatype::Int(10)));
+
+    constraint.add_key_pair(column_local, column_foreign);
+
+    assert_eq!(constraint.key_pairs_count(), 2);
+    assert_eq!(constraint.key_pairs().len(), 2);
 }
