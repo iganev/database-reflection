@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use database_reflection::metadata::consts::*;
 use database_reflection::metadata::WithMetadata;
 use database_reflection::reflection::Column;
@@ -83,6 +84,7 @@ fn get_mock_db() -> Database {
             Column::new(clients_table_name, "client_id", Datatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                .set_meta_flag(METADATA_FLAG_PRIMARY)
                 .to_owned(),
         )
         .set_column(Column::new(
@@ -181,6 +183,7 @@ fn get_mock_db() -> Database {
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .set_meta_flag(METADATA_FLAG_PRIMARY)
             .to_owned(),
         )
         .set_column(
@@ -280,6 +283,7 @@ fn get_mock_db() -> Database {
             Column::new(products_table_name, "product_id", Datatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+                .set_meta_flag(METADATA_FLAG_PRIMARY)
                 .to_owned(),
         )
         .set_column(
@@ -317,6 +321,7 @@ fn get_mock_db() -> Database {
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .set_meta_flag(METADATA_FLAG_PRIMARY)
             .to_owned(),
         )
         .set_column(
@@ -394,6 +399,65 @@ fn get_mock_db() -> Database {
 #[test]
 fn construction() {
     let db = get_mock_db();
+
+    //
+
+    assert!(db
+        .table("clients")
+        .unwrap()
+        .column("phone")
+        .unwrap()
+        .meta_flag(METADATA_FLAG_NULLABLE));
+
+    assert_eq!(
+        db.table("clients").unwrap().meta(METADATA_CHARSET),
+        Some("utf8mb4".to_string())
+    );
+
+    let col_list = vec!["client_product_id", "client_id", "product_id"];
+    for (column_name, column) in db.table("client_products").unwrap().columns() {
+        assert_eq!(column_name.as_str(), column.name().as_str());
+        assert!(col_list.contains(&column_name.as_str()));
+    }
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .constraint("fk_client_products_1")
+            .unwrap()
+            .foreign()
+            .table()
+            .as_str(),
+        "clients"
+    );
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .constraint_by_column_name(String::from("client_id").into())
+            .unwrap()
+            .foreign()
+            .table()
+            .as_str(),
+        "clients"
+    );
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .constraint_by_column(
+                db.table("client_products")
+                    .unwrap()
+                    .column("client_id")
+                    .unwrap()
+                    .as_ref()
+            )
+            .unwrap()
+            .foreign()
+            .table()
+            .as_str(),
+        "clients"
+    );
 
     //
 
