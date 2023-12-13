@@ -321,7 +321,7 @@ fn get_mock_db() -> Database {
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-            .set_meta_flag(METADATA_FLAG_PRIMARY)
+            //.set_meta_flag(METADATA_FLAG_PRIMARY)
             .to_owned(),
         )
         .set_column(
@@ -457,6 +457,47 @@ fn construction() {
             .table()
             .as_str(),
         "clients"
+    );
+
+    //
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .index("PRIMARY")
+            .unwrap()
+            .column()
+            .name()
+            .as_str(),
+        "client_product_id"
+    );
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .index_by_column_name(String::from("client_id").into())
+            .unwrap()
+            .column()
+            .name()
+            .as_str(),
+        "client_id"
+    );
+
+    assert_eq!(
+        db.table("client_products")
+            .unwrap()
+            .index_by_column(
+                db.table("client_products")
+                    .unwrap()
+                    .column("client_id")
+                    .unwrap()
+                    .as_ref()
+            )
+            .unwrap()
+            .column()
+            .name()
+            .as_str(),
+        "client_id"
     );
 
     //
