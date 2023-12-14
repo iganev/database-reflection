@@ -1,6 +1,4 @@
-use database_reflection::metadata::consts::{
-    METADATA_CASCADE, METADATA_ON_DELETE, METADATA_ON_UPDATE,
-};
+use database_reflection::metadata::consts::{METADATA_CASCADE, METADATA_ON_DELETE};
 use database_reflection::metadata::WithMetadata;
 use database_reflection::reflection::{Column, Constraint, Datatype};
 use std::rc::Rc;
