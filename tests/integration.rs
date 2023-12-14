@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use database_reflection::metadata::consts::*;
 use database_reflection::metadata::WithMetadata;
 use database_reflection::reflection::Column;
@@ -499,6 +498,26 @@ fn construction() {
             .as_str(),
         "client_id"
     );
+
+    //
+
+    assert_eq!(db.table("client_products").unwrap().constraints().len(), 2);
+
+    let constr_list = vec!["fk_client_products_1", "fk_client_products_2"];
+    for (constr_name, constr) in db.table("client_products").unwrap().constraints() {
+        assert_eq!(constr_name.as_str(), constr.name().as_str());
+        assert!(constr_list.contains(&constr_name.as_str()));
+    }
+
+    //
+
+    assert_eq!(db.table("client_products").unwrap().indexes().len(), 3);
+
+    let idx_list = vec!["PRIMARY", "fk_client_products_1_idx", "fk_client_products_2_idx"];
+    for (idx_name, idx) in db.table("client_products").unwrap().indexes() {
+        assert_eq!(idx_name.as_str(), idx.name().as_str());
+        assert!(idx_list.contains(&idx_name.as_str()));
+    }
 
     //
 
