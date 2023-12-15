@@ -1,6 +1,6 @@
 use database_reflection::metadata::consts::*;
 use database_reflection::metadata::WithMetadata;
-use database_reflection::reflection::Column;
+use database_reflection::reflection::{Column, ConstraintSide};
 use database_reflection::reflection::Constraint;
 use database_reflection::reflection::Database;
 use database_reflection::reflection::Index;
@@ -529,6 +529,10 @@ fn construction() {
 
     //
 
+    assert_eq!(db.constraints().len(), 3);
+
+    //
+
     for c in db
         .constraints_by_table(db.table("clients").unwrap(), None)
         .iter()
@@ -546,6 +550,21 @@ fn construction() {
 
     for c in db
         .constraints_by_table(db.table("products").unwrap(), None)
+        .iter()
+    {
+        println!(
+            "Constraint {}.{} -> {}.{}",
+            c.local().table(),
+            c.local().name(),
+            c.foreign().table(),
+            c.foreign().name()
+        );
+    }
+
+    println!();
+
+    for c in db
+        .constraints_by_table(db.table("client_products").unwrap(), Some(ConstraintSide::Local))
         .iter()
     {
         println!(
