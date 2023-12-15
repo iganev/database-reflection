@@ -513,10 +513,18 @@ fn construction() {
 
     assert_eq!(db.table("client_products").unwrap().indexes().len(), 3);
 
-    let idx_list = vec!["PRIMARY", "fk_client_products_1_idx", "fk_client_products_2_idx"];
+    let idx_list = vec![
+        "PRIMARY",
+        "fk_client_products_1_idx",
+        "fk_client_products_2_idx",
+    ];
     for (idx_name, idx) in db.table("client_products").unwrap().indexes() {
         assert_eq!(idx_name.as_str(), idx.name().as_str());
         assert!(idx_list.contains(&idx_name.as_str()));
+    }
+
+    for (_, table) in db.tables() {
+        assert_eq!(table.primary_key_count(), 1);
     }
 
     //
