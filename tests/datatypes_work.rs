@@ -1,4 +1,5 @@
-use database_reflection::reflection::{Datatype, DefaultValue};
+use std::str::FromStr;
+use database_reflection::reflection::{Datatype, DefaultValue, ParseDatatypeError};
 use serde_json::Value;
 
 #[test]
@@ -16,6 +17,7 @@ fn test_datatypes() {
 
     assert_eq!(Datatype::try_from("char(64)"), Ok(Datatype::Char(64)));
     assert_eq!(Datatype::try_from("varchar(45)"), Ok(Datatype::Varchar(45)));
+    assert_eq!(Datatype::from_str("varchar(64)"), Ok(Datatype::Varchar(64)));
     assert_eq!(Datatype::try_from("text(1024)"), Ok(Datatype::Text(1024)));
     assert_eq!(Datatype::try_from("text"), Ok(Datatype::Text(65535)));
 
@@ -40,6 +42,10 @@ fn test_datatypes() {
             String::from("that")
         ]))
     );
+
+    assert_eq!(Datatype::try_from("varchar(nan)"), Err(ParseDatatypeError));
+    assert_eq!(Datatype::try_from("badtype(10)"), Err(ParseDatatypeError));
+    assert_eq!(Datatype::try_from("badtype"), Err(ParseDatatypeError));
 
     //
 
