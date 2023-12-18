@@ -1,6 +1,6 @@
-use std::str::FromStr;
 use database_reflection::reflection::{Datatype, DefaultValue, ParseDatatypeError};
 use serde_json::Value;
+use std::str::FromStr;
 
 #[test]
 fn test_datatypes() {

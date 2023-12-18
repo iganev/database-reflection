@@ -1,10 +1,10 @@
 use database_reflection::metadata::consts::*;
 use database_reflection::metadata::WithMetadata;
-use database_reflection::reflection::{Column, ConstraintSide};
 use database_reflection::reflection::Constraint;
 use database_reflection::reflection::Database;
 use database_reflection::reflection::Index;
 use database_reflection::reflection::Table;
+use database_reflection::reflection::{Column, ConstraintSide};
 use database_reflection::reflection::{Datatype, DefaultValue};
 
 fn get_mock_db() -> Database {
@@ -564,7 +564,10 @@ fn construction() {
     println!();
 
     for c in db
-        .constraints_by_table(db.table("client_products").unwrap(), Some(ConstraintSide::Local))
+        .constraints_by_table(
+            db.table("client_products").unwrap(),
+            Some(ConstraintSide::Local),
+        )
         .iter()
     {
         println!(
