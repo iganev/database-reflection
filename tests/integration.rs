@@ -527,6 +527,13 @@ fn construction() {
         assert_eq!(table.primary_key_count(), 1);
     }
 
+    assert_eq!(db.table("clients").unwrap().primary_key(), Some("client_id".to_string().into()));
+    assert_eq!(db.table("clients").unwrap().primary_key_column(), db.table("clients").unwrap().column("client_id"));
+
+    assert_eq!(db.table("clients").unwrap().primary_keys().len(), 1);
+    assert_eq!(db.table("clients").unwrap().primary_keys().next().cloned(), Some("client_id".to_string().into()));
+    assert_eq!(db.table("clients").unwrap().primary_key_columns().first().cloned(), db.table("clients").unwrap().column("client_id"));
+
     //
 
     assert_eq!(db.constraints().len(), 3);
