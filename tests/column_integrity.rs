@@ -3,25 +3,25 @@ use database_reflection::metadata::consts::{
     METADATA_FLAG_PRIMARY, METADATA_FLAG_UNSIGNED,
 };
 use database_reflection::metadata::WithMetadata;
-use database_reflection::reflection::{Column, Datatype, DefaultValue};
+use database_reflection::reflection::{Column, SqlDatatype, DefaultValue};
 use serde_json::Value;
 
 #[test]
 fn test_column_integrity() {
-    let mut column_pk = Column::new("test", "id", Datatype::Int(32));
+    let mut column_pk = Column::new("test", "id", SqlDatatype::Int(32));
     column_pk.set_meta_flag(METADATA_FLAG_UNSIGNED);
     column_pk.set_meta_flag(METADATA_FLAG_PRIMARY);
     column_pk.set_meta_flag(METADATA_FLAG_AUTO_INCREMENT);
 
     assert_eq!(column_pk.name(), String::from("id").into());
     assert_eq!(column_pk.table(), String::from("test").into());
-    assert_eq!(column_pk.datatype(), &Datatype::Int(32));
+    assert_eq!(column_pk.datatype(), &SqlDatatype::Int(32));
     assert_eq!(column_pk.default(), None);
     assert!(column_pk.meta_flag(METADATA_FLAG_UNSIGNED));
     assert!(column_pk.meta_flag(METADATA_FLAG_PRIMARY));
     assert!(column_pk.meta_flag(METADATA_FLAG_AUTO_INCREMENT));
 
-    let mut column_vc = Column::new("test", "value", Datatype::Varchar(64));
+    let mut column_vc = Column::new("test", "value", SqlDatatype::Varchar(64));
     column_vc.set_default(Some(DefaultValue::Value(Value::String(
         "empty".to_string(),
     ))));
@@ -30,7 +30,7 @@ fn test_column_integrity() {
 
     assert_eq!(column_vc.name(), String::from("value").into());
     assert_eq!(column_vc.table(), String::from("test").into());
-    assert_eq!(column_vc.datatype(), &Datatype::Varchar(64));
+    assert_eq!(column_vc.datatype(), &SqlDatatype::Varchar(64));
     assert_eq!(
         column_vc.default(),
         Some(DefaultValue::Value(Value::String("empty".to_string())))

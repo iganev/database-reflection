@@ -1,5 +1,5 @@
 use crate::metadata::WithMetadata;
-use crate::reflection::datatypes::{Datatype, DefaultValue};
+use crate::reflection::datatypes::{SqlDatatype, DefaultValue, JsonDatatype, RustType};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -8,7 +8,9 @@ use std::rc::Rc;
 pub struct Column {
     table: Rc<String>,
     name: Rc<String>,
-    datatype: Datatype,
+    datatype: SqlDatatype,
+    datatype_json: JsonDatatype,
+    datatype_rust: RustType,
     #[serde(skip_serializing_if = "Option::is_none")]
     default: Option<DefaultValue>,
     metadata: HashMap<String, String>,
@@ -28,11 +30,13 @@ impl WithMetadata for Column {
 
 impl Column {
     /// Create a new column by supplying at minimum its name, type and table
-    pub fn new(table: impl ToString, name: impl ToString, datatype: Datatype) -> Column {
+    pub fn new(table: impl ToString, name: impl ToString, datatype: SqlDatatype) -> Column {
         Column {
             table: Rc::new(table.to_string()),
             name: Rc::new(name.to_string()),
-            datatype,
+            datatype: datatype.clone(),
+            datatype_json: (&datatype).into(),
+            datatype_rust: (&datatype).into(),
             ..Default::default()
         }
     }
@@ -54,7 +58,7 @@ impl Column {
     }
 
     /// Get datatype
-    pub fn datatype(&self) -> &Datatype {
+    pub fn datatype(&self) -> &SqlDatatype {
         &self.datatype
     }
 

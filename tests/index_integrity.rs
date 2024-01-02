@@ -1,9 +1,9 @@
-use database_reflection::reflection::{Column, Datatype, Index};
+use database_reflection::reflection::{Column, SqlDatatype, Index};
 use std::rc::Rc;
 
 #[test]
 fn test_index_integrity() {
-    let column = Rc::new(Column::new("local", "local_id", Datatype::Int(10)));
+    let column = Rc::new(Column::new("local", "local_id", SqlDatatype::Int(10)));
 
     let index = Index::new("ind_local_1", column, true, false);
 

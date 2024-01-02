@@ -5,7 +5,7 @@ use database_reflection::reflection::Database;
 use database_reflection::reflection::Index;
 use database_reflection::reflection::Table;
 use database_reflection::reflection::{Column, ConstraintSide};
-use database_reflection::reflection::{Datatype, DefaultValue};
+use database_reflection::reflection::{SqlDatatype, DefaultValue};
 
 fn get_mock_db() -> Database {
     // CREATE TABLE `clients` (
@@ -80,7 +80,7 @@ fn get_mock_db() -> Database {
     let mut clients_table = Table::new(clients_table_name);
     clients_table
         .set_column(
-            Column::new(clients_table_name, "client_id", Datatype::Int(10))
+            Column::new(clients_table_name, "client_id", SqlDatatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
                 .set_meta_flag(METADATA_FLAG_PRIMARY)
@@ -89,25 +89,25 @@ fn get_mock_db() -> Database {
         .set_column(Column::new(
             clients_table_name,
             "email",
-            Datatype::Varchar(255),
+            SqlDatatype::Varchar(255),
         ))
         .set_column(Column::new(
             clients_table_name,
             "password",
-            Datatype::Varchar(64),
+            SqlDatatype::Varchar(64),
         ))
         .set_column(
-            Column::new(clients_table_name, "phone", Datatype::Varchar(45))
+            Column::new(clients_table_name, "phone", SqlDatatype::Varchar(45))
                 .set_meta_flag(METADATA_FLAG_NULLABLE)
                 .to_owned(),
         )
         .set_column(
-            Column::new(clients_table_name, "first_name", Datatype::Varchar(45))
+            Column::new(clients_table_name, "first_name", SqlDatatype::Varchar(45))
                 .set_meta_flag(METADATA_FLAG_NULLABLE)
                 .to_owned(),
         )
         .set_column(
-            Column::new(clients_table_name, "last_name", Datatype::Varchar(45))
+            Column::new(clients_table_name, "last_name", SqlDatatype::Varchar(45))
                 .set_meta_flag(METADATA_FLAG_NULLABLE)
                 .to_owned(),
         )
@@ -115,7 +115,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 clients_table_name,
                 "is_email_verified",
-                Datatype::Tinyint(1),
+                SqlDatatype::Tinyint(1),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
@@ -125,7 +125,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 clients_table_name,
                 "email_verification_code",
-                Datatype::Varchar(64),
+                SqlDatatype::Varchar(64),
             )
             .set_meta_flag(METADATA_FLAG_NULLABLE)
             .to_owned(),
@@ -134,13 +134,13 @@ fn get_mock_db() -> Database {
             Column::new(
                 clients_table_name,
                 "password_reset_code",
-                Datatype::Varchar(64),
+                SqlDatatype::Varchar(64),
             )
             .set_meta_flag(METADATA_FLAG_NULLABLE)
             .to_owned(),
         )
         .set_column(
-            Column::new(clients_table_name, "last_access", Datatype::Timestamp)
+            Column::new(clients_table_name, "last_access", SqlDatatype::Timestamp)
                 .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                     "current_timestamp()",
@@ -148,7 +148,7 @@ fn get_mock_db() -> Database {
                 .to_owned(),
         )
         .set_column(
-            Column::new(clients_table_name, "created", Datatype::Timestamp)
+            Column::new(clients_table_name, "created", SqlDatatype::Timestamp)
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                     "current_timestamp()",
                 ))))
@@ -178,7 +178,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_tokens_table_name,
                 "client_token_id",
-                Datatype::Int(10),
+                SqlDatatype::Int(10),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
@@ -186,25 +186,25 @@ fn get_mock_db() -> Database {
             .to_owned(),
         )
         .set_column(
-            Column::new(client_tokens_table_name, "client_id", Datatype::Int(10))
+            Column::new(client_tokens_table_name, "client_id", SqlDatatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .to_owned(),
         )
         .set_column(Column::new(
             client_tokens_table_name,
             "auth_token",
-            Datatype::Varchar(64),
+            SqlDatatype::Varchar(64),
         ))
         .set_column(Column::new(
             client_tokens_table_name,
             "auth_token_expiration_date",
-            Datatype::Timestamp,
+            SqlDatatype::Timestamp,
         ))
         .set_column(
             Column::new(
                 client_tokens_table_name,
                 "remote_address",
-                Datatype::Varchar(64),
+                SqlDatatype::Varchar(64),
             )
             .set_meta_flag(METADATA_FLAG_NULLABLE)
             .to_owned(),
@@ -213,13 +213,13 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_tokens_table_name,
                 "user_agent",
-                Datatype::Varchar(255),
+                SqlDatatype::Varchar(255),
             )
             .set_meta_flag(METADATA_FLAG_NULLABLE)
             .to_owned(),
         )
         .set_column(
-            Column::new(client_tokens_table_name, "last_access", Datatype::Timestamp)
+            Column::new(client_tokens_table_name, "last_access", SqlDatatype::Timestamp)
                 .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                     "current_timestamp()",
@@ -227,7 +227,7 @@ fn get_mock_db() -> Database {
                 .to_owned(),
         )
         .set_column(
-            Column::new(client_tokens_table_name, "created", Datatype::Timestamp)
+            Column::new(client_tokens_table_name, "created", SqlDatatype::Timestamp)
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(
                     "current_timestamp()",
                 ))))
@@ -279,19 +279,19 @@ fn get_mock_db() -> Database {
     let mut products_table = Table::new(products_table_name);
     products_table
         .set_column(
-            Column::new(products_table_name, "product_id", Datatype::Int(10))
+            Column::new(products_table_name, "product_id", SqlDatatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
                 .set_meta_flag(METADATA_FLAG_PRIMARY)
                 .to_owned(),
         )
         .set_column(
-            Column::new(products_table_name, "name", Datatype::Varchar(255))
+            Column::new(products_table_name, "name", SqlDatatype::Varchar(255))
                 .set_meta_flag(METADATA_FLAG_NULLABLE)
                 .to_owned(),
         )
         .set_column(
-            Column::new(products_table_name, "is_enabled", Datatype::Tinyint(1))
+            Column::new(products_table_name, "is_enabled", SqlDatatype::Tinyint(1))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
                 .to_owned(),
@@ -316,7 +316,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_products_table_name,
                 "client_product_id",
-                Datatype::Int(10),
+                SqlDatatype::Int(10),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
@@ -324,12 +324,12 @@ fn get_mock_db() -> Database {
             .to_owned(),
         )
         .set_column(
-            Column::new(client_products_table_name, "client_id", Datatype::Int(10))
+            Column::new(client_products_table_name, "client_id", SqlDatatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .to_owned(),
         )
         .set_column(
-            Column::new(client_products_table_name, "product_id", Datatype::Int(10))
+            Column::new(client_products_table_name, "product_id", SqlDatatype::Int(10))
                 .set_meta_flag(METADATA_FLAG_UNSIGNED)
                 .to_owned(),
         );
