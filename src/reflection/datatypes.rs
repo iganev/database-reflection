@@ -143,7 +143,7 @@ pub enum JsonNumber {
     Number,
     BigInt,
     Int,
-    Float
+    Float,
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -155,7 +155,7 @@ pub enum JsonString {
     Datetime,
     Date,
     Time,
-    Json
+    Json,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -166,7 +166,7 @@ pub enum JsonDatatype {
     String(JsonString, Option<u32>),
     Boolean,
     Array(Vec<String>),
-    Object(Value)
+    Object(Value),
 }
 
 impl Default for JsonDatatype {
@@ -180,14 +180,26 @@ impl From<&SqlDatatype> for JsonDatatype {
         match value {
             SqlDatatype::Tinyint(1) => JsonDatatype::Boolean,
             SqlDatatype::Int(_) | SqlDatatype::Tinyint(_) => JsonDatatype::Number(JsonNumber::Int),
-            SqlDatatype::Float(_,_) | SqlDatatype::Real(_,_) => JsonDatatype::Number(JsonNumber::Float),
+            SqlDatatype::Float(_, _) | SqlDatatype::Real(_, _) => {
+                JsonDatatype::Number(JsonNumber::Float)
+            }
             SqlDatatype::Bigint(_) => JsonDatatype::Number(JsonNumber::BigInt),
             SqlDatatype::Date => JsonDatatype::String(JsonString::Date, Some(10)),
             SqlDatatype::Time => JsonDatatype::String(JsonString::Time, Some(8)),
-            SqlDatatype::Datetime | SqlDatatype::Timestamp => JsonDatatype::String(JsonString::Datetime, Some(20)),
-            SqlDatatype::Char(length) | SqlDatatype::Varchar(length) | SqlDatatype::Text(length) => JsonDatatype::String(JsonString::String, Some(length.clone())),
-            SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => JsonDatatype::String(JsonString::String, Some(length.clone())),
-            SqlDatatype::Enum(options) | SqlDatatype::Set(options) => JsonDatatype::Array(options.clone())
+            SqlDatatype::Datetime | SqlDatatype::Timestamp => {
+                JsonDatatype::String(JsonString::Datetime, Some(20))
+            }
+            SqlDatatype::Char(length)
+            | SqlDatatype::Varchar(length)
+            | SqlDatatype::Text(length) => {
+                JsonDatatype::String(JsonString::String, Some(length.clone()))
+            }
+            SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => {
+                JsonDatatype::String(JsonString::String, Some(length.clone()))
+            }
+            SqlDatatype::Enum(options) | SqlDatatype::Set(options) => {
+                JsonDatatype::Array(options.clone())
+            }
         }
     }
 }
@@ -196,12 +208,12 @@ impl From<&SqlDatatype> for JsonDatatype {
 /// Basic Rust type as string
 pub struct RustDatatype(pub String, pub Option<u32>);
 
-pub const RUST_TYPE_STRING:&str = "String";
-pub const RUST_TYPE_USIZE:&str = "usize";
-pub const RUST_TYPE_U32:&str = "u32";
-pub const RUST_TYPE_F32:&str = "f32";
-pub const RUST_TYPE_BOOL:&str = "bool";
-pub const RUST_TYPE_VEC:&str = "Vec<String>";
+pub const RUST_TYPE_STRING: &str = "String";
+pub const RUST_TYPE_USIZE: &str = "usize";
+pub const RUST_TYPE_U32: &str = "u32";
+pub const RUST_TYPE_F32: &str = "f32";
+pub const RUST_TYPE_BOOL: &str = "bool";
+pub const RUST_TYPE_VEC: &str = "Vec<String>";
 
 impl Default for RustDatatype {
     fn default() -> Self {
@@ -210,19 +222,34 @@ impl Default for RustDatatype {
 }
 
 impl From<&SqlDatatype> for RustDatatype {
-
     fn from(value: &SqlDatatype) -> Self {
         match value {
             SqlDatatype::Tinyint(1) => RustDatatype(RUST_TYPE_BOOL.to_string(), None),
-            SqlDatatype::Int(len) | SqlDatatype::Tinyint(len) => RustDatatype(RUST_TYPE_U32.to_string(), Some(len.clone())),
-            SqlDatatype::Float(_,fp) | SqlDatatype::Real(_,fp) => RustDatatype(RUST_TYPE_F32.to_string(), Some(fp.clone())),
-            SqlDatatype::Bigint(len) => RustDatatype(RUST_TYPE_USIZE.to_string(), Some(len.clone())),
+            SqlDatatype::Int(len) | SqlDatatype::Tinyint(len) => {
+                RustDatatype(RUST_TYPE_U32.to_string(), Some(len.clone()))
+            }
+            SqlDatatype::Float(_, fp) | SqlDatatype::Real(_, fp) => {
+                RustDatatype(RUST_TYPE_F32.to_string(), Some(fp.clone()))
+            }
+            SqlDatatype::Bigint(len) => {
+                RustDatatype(RUST_TYPE_USIZE.to_string(), Some(len.clone()))
+            }
             SqlDatatype::Date => RustDatatype(RUST_TYPE_STRING.to_string(), Some(10)),
             SqlDatatype::Time => RustDatatype(RUST_TYPE_STRING.to_string(), Some(8)),
-            SqlDatatype::Datetime | SqlDatatype::Timestamp => RustDatatype(RUST_TYPE_STRING.to_string(), Some(20)),
-            SqlDatatype::Char(length) | SqlDatatype::Varchar(length) | SqlDatatype::Text(length) => RustDatatype(RUST_TYPE_STRING.to_string(), Some(length.clone())),
-            SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => RustDatatype(RUST_TYPE_STRING.to_string(), Some(length.clone())),
-            SqlDatatype::Enum(options) | SqlDatatype::Set(options) => RustDatatype(RUST_TYPE_VEC.to_string(), Some(options.len() as u32)),
+            SqlDatatype::Datetime | SqlDatatype::Timestamp => {
+                RustDatatype(RUST_TYPE_STRING.to_string(), Some(20))
+            }
+            SqlDatatype::Char(length)
+            | SqlDatatype::Varchar(length)
+            | SqlDatatype::Text(length) => {
+                RustDatatype(RUST_TYPE_STRING.to_string(), Some(length.clone()))
+            }
+            SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => {
+                RustDatatype(RUST_TYPE_STRING.to_string(), Some(length.clone()))
+            }
+            SqlDatatype::Enum(options) | SqlDatatype::Set(options) => {
+                RustDatatype(RUST_TYPE_VEC.to_string(), Some(options.len() as u32))
+            }
         }
     }
 }

@@ -24,7 +24,11 @@ fn test_constraint_integrity() {
 
     assert_eq!(constraint.key_pairs_count(), 1);
 
-    let column_local = Rc::new(Column::new("local", "another_local_id", SqlDatatype::Int(10)));
+    let column_local = Rc::new(Column::new(
+        "local",
+        "another_local_id",
+        SqlDatatype::Int(10),
+    ));
     let column_foreign = Rc::new(Column::new(
         "foreign",
         "another_foreign_id",

@@ -1,4 +1,4 @@
-use database_reflection::reflection::{Column, SqlDatatype, Index};
+use database_reflection::reflection::{Column, Index, SqlDatatype};
 use std::rc::Rc;
 
 #[test]

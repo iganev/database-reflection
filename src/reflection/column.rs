@@ -1,5 +1,5 @@
 use crate::metadata::WithMetadata;
-use crate::reflection::datatypes::{SqlDatatype, DefaultValue, JsonDatatype, RustDatatype};
+use crate::reflection::datatypes::{DefaultValue, JsonDatatype, RustDatatype, SqlDatatype};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;

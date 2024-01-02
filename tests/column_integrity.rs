@@ -3,7 +3,9 @@ use database_reflection::metadata::consts::{
     METADATA_FLAG_PRIMARY, METADATA_FLAG_UNSIGNED,
 };
 use database_reflection::metadata::WithMetadata;
-use database_reflection::reflection::{Column, SqlDatatype, DefaultValue, JsonDatatype, JsonNumber, RustDatatype, JsonString};
+use database_reflection::reflection::{
+    Column, DefaultValue, JsonDatatype, JsonNumber, JsonString, RustDatatype, SqlDatatype,
+};
 use serde_json::Value;
 
 #[test]
@@ -16,8 +18,14 @@ fn test_column_integrity() {
     assert_eq!(column_pk.name(), String::from("id").into());
     assert_eq!(column_pk.table(), String::from("test").into());
     assert_eq!(column_pk.datatype(), &SqlDatatype::Int(32));
-    assert_eq!(column_pk.datatype_json(), &JsonDatatype::Number(JsonNumber::Int));
-    assert_eq!(column_pk.datatype_rust(), &RustDatatype("u32".to_string(), Some(32)));
+    assert_eq!(
+        column_pk.datatype_json(),
+        &JsonDatatype::Number(JsonNumber::Int)
+    );
+    assert_eq!(
+        column_pk.datatype_rust(),
+        &RustDatatype("u32".to_string(), Some(32))
+    );
     assert_eq!(column_pk.default(), None);
     assert!(column_pk.meta_flag(METADATA_FLAG_UNSIGNED));
     assert!(column_pk.meta_flag(METADATA_FLAG_PRIMARY));
@@ -33,8 +41,14 @@ fn test_column_integrity() {
     assert_eq!(column_vc.name(), String::from("value").into());
     assert_eq!(column_vc.table(), String::from("test").into());
     assert_eq!(column_vc.datatype(), &SqlDatatype::Varchar(64));
-    assert_eq!(column_vc.datatype_json(), &JsonDatatype::String(JsonString::String, Some(64)));
-    assert_eq!(column_vc.datatype_rust(), &RustDatatype("String".to_string(), Some(64)));
+    assert_eq!(
+        column_vc.datatype_json(),
+        &JsonDatatype::String(JsonString::String, Some(64))
+    );
+    assert_eq!(
+        column_vc.datatype_rust(),
+        &RustDatatype("String".to_string(), Some(64))
+    );
     assert_eq!(
         column_vc.default(),
         Some(DefaultValue::Value(Value::String("empty".to_string())))

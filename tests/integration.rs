@@ -5,7 +5,7 @@ use database_reflection::reflection::Database;
 use database_reflection::reflection::Index;
 use database_reflection::reflection::Table;
 use database_reflection::reflection::{Column, ConstraintSide};
-use database_reflection::reflection::{SqlDatatype, DefaultValue};
+use database_reflection::reflection::{DefaultValue, SqlDatatype};
 
 fn get_mock_db() -> Database {
     // CREATE TABLE `clients` (
@@ -219,12 +219,16 @@ fn get_mock_db() -> Database {
             .to_owned(),
         )
         .set_column(
-            Column::new(client_tokens_table_name, "last_access", SqlDatatype::Timestamp)
-                .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(
-                    "current_timestamp()",
-                ))))
-                .to_owned(),
+            Column::new(
+                client_tokens_table_name,
+                "last_access",
+                SqlDatatype::Timestamp,
+            )
+            .set_meta(METADATA_ON_UPDATE, "current_timestamp()")
+            .set_default(Some(DefaultValue::Value(serde_json::Value::from(
+                "current_timestamp()",
+            ))))
+            .to_owned(),
         )
         .set_column(
             Column::new(client_tokens_table_name, "created", SqlDatatype::Timestamp)
@@ -324,14 +328,22 @@ fn get_mock_db() -> Database {
             .to_owned(),
         )
         .set_column(
-            Column::new(client_products_table_name, "client_id", SqlDatatype::Int(10))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+            Column::new(
+                client_products_table_name,
+                "client_id",
+                SqlDatatype::Int(10),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .to_owned(),
         )
         .set_column(
-            Column::new(client_products_table_name, "product_id", SqlDatatype::Int(10))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+            Column::new(
+                client_products_table_name,
+                "product_id",
+                SqlDatatype::Int(10),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .to_owned(),
         );
 
     client_products_table.set_index(Index::new(
