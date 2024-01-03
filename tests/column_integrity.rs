@@ -5,19 +5,23 @@ use database_reflection::metadata::consts::{
 use database_reflection::metadata::WithMetadata;
 use database_reflection::reflection::{
     Column, DefaultValue, JsonDatatype, JsonNumber, JsonString, RustDatatype, SqlDatatype,
+    SqlSigned,
 };
 use serde_json::Value;
 
 #[test]
 fn test_column_integrity() {
-    let mut column_pk = Column::new("test", "id", SqlDatatype::Int(32));
+    let mut column_pk = Column::new("test", "id", SqlDatatype::Int(32, SqlSigned::Unsigned));
     column_pk.set_meta_flag(METADATA_FLAG_UNSIGNED);
     column_pk.set_meta_flag(METADATA_FLAG_PRIMARY);
     column_pk.set_meta_flag(METADATA_FLAG_AUTO_INCREMENT);
 
     assert_eq!(column_pk.name(), String::from("id").into());
     assert_eq!(column_pk.table(), String::from("test").into());
-    assert_eq!(column_pk.datatype(), &SqlDatatype::Int(32));
+    assert_eq!(
+        column_pk.datatype(),
+        &SqlDatatype::Int(32, SqlSigned::Unsigned)
+    );
     assert_eq!(
         column_pk.datatype_json(),
         &JsonDatatype::Number(JsonNumber::Int)

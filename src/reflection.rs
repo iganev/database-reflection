@@ -12,7 +12,7 @@ pub use crate::reflection::constraint::ConstraintSide;
 pub use crate::reflection::database::Database;
 pub use crate::reflection::datatypes::{
     DefaultValue, JsonDatatype, JsonNumber, JsonString, ParseDatatypeError, RustDatatype,
-    SqlDatatype,
+    SqlDatatype, SqlSigned,
 };
 pub use crate::reflection::index::Index;
 pub use crate::reflection::table::Table;

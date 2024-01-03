@@ -1,9 +1,13 @@
-use database_reflection::reflection::{Column, Index, SqlDatatype};
+use database_reflection::reflection::{Column, Index, SqlDatatype, SqlSigned};
 use std::rc::Rc;
 
 #[test]
 fn test_index_integrity() {
-    let column = Rc::new(Column::new("local", "local_id", SqlDatatype::Int(10)));
+    let column = Rc::new(Column::new(
+        "local",
+        "local_id",
+        SqlDatatype::Int(10, SqlSigned::Unsigned),
+    ));
 
     let index = Index::new("ind_local_1", column, true, false);
 

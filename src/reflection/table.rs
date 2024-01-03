@@ -1,4 +1,4 @@
-use crate::metadata::consts::METADATA_FLAG_PRIMARY;
+use crate::metadata::consts::{METADATA_CHARSET, METADATA_COLLATION, METADATA_FLAG_PRIMARY};
 use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
 use crate::reflection::constraint::Constraint;
@@ -46,7 +46,24 @@ impl Table {
     }
 
     /// Add a new column to the table
-    pub fn set_column(&mut self, column: Column) -> &mut Table {
+    pub fn set_column(&mut self, mut column: Column) -> &mut Table {
+        if column.datatype().is_text()
+            && column.meta(METADATA_CHARSET) == None
+            && column.meta(METADATA_COLLATION) == None
+            && self.meta(METADATA_CHARSET).is_some()
+            && self.meta(METADATA_COLLATION).is_some()
+        {
+            column
+                .set_meta(
+                    METADATA_CHARSET,
+                    self.meta(METADATA_CHARSET).unwrap_or_default(),
+                )
+                .set_meta(
+                    METADATA_COLLATION,
+                    self.meta(METADATA_COLLATION).unwrap_or_default(),
+                );
+        }
+
         if column.meta_flag(METADATA_FLAG_PRIMARY) && !self.primary_key.contains(&column.name()) {
             self.primary_key.push(column.name());
         }

@@ -1,25 +1,36 @@
-use database_reflection::reflection::{DefaultValue, ParseDatatypeError, SqlDatatype};
+use database_reflection::reflection::{DefaultValue, ParseDatatypeError, SqlDatatype, SqlSigned};
 use serde_json::Value;
 use std::str::FromStr;
 
 #[test]
 fn test_datatypes() {
     assert_eq!(
-        SqlDatatype::try_from("tinyint(1)"),
-        Ok(SqlDatatype::Tinyint(1))
+        SqlDatatype::try_from("tinyint(1) unsigned"),
+        Ok(SqlDatatype::Tinyint(1, SqlSigned::Unsigned))
     );
-    assert_eq!(SqlDatatype::try_from("int(10)"), Ok(SqlDatatype::Int(10)));
+    assert_eq!(
+        SqlDatatype::try_from("int(10) unsigned"),
+        Ok(SqlDatatype::Int(10, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("smallint(5) unsigned"),
+        Ok(SqlDatatype::Smallint(5, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("mediumint(15) unsigned"),
+        Ok(SqlDatatype::Mediumint(15, SqlSigned::Unsigned))
+    );
     assert_eq!(
         SqlDatatype::try_from("bigint(32)"),
-        Ok(SqlDatatype::Bigint(32))
+        Ok(SqlDatatype::Bigint(32, SqlSigned::Signed))
     );
     assert_eq!(
         SqlDatatype::try_from("float(4,2)"),
-        Ok(SqlDatatype::Float(4, 2))
+        Ok(SqlDatatype::Float(4, 2, SqlSigned::Signed))
     );
     assert_eq!(
-        SqlDatatype::try_from("real(10,2)"),
-        Ok(SqlDatatype::Real(10, 2))
+        SqlDatatype::try_from("double(10,2) unsigned"),
+        Ok(SqlDatatype::Double(10, 2, SqlSigned::Unsigned))
     );
 
     assert_eq!(SqlDatatype::try_from("date"), Ok(SqlDatatype::Date));

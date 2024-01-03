@@ -1,10 +1,10 @@
 use database_reflection::metadata::consts::*;
 use database_reflection::metadata::WithMetadata;
-use database_reflection::reflection::Constraint;
 use database_reflection::reflection::Database;
 use database_reflection::reflection::Index;
 use database_reflection::reflection::Table;
 use database_reflection::reflection::{Column, ConstraintSide};
+use database_reflection::reflection::{Constraint, SqlSigned};
 use database_reflection::reflection::{DefaultValue, SqlDatatype};
 
 fn get_mock_db() -> Database {
@@ -80,11 +80,15 @@ fn get_mock_db() -> Database {
     let mut clients_table = Table::new(clients_table_name);
     clients_table
         .set_column(
-            Column::new(clients_table_name, "client_id", SqlDatatype::Int(10))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .set_meta_flag(METADATA_FLAG_PRIMARY)
-                .to_owned(),
+            Column::new(
+                clients_table_name,
+                "client_id",
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .set_meta_flag(METADATA_FLAG_PRIMARY)
+            .to_owned(),
         )
         .set_column(Column::new(
             clients_table_name,
@@ -115,7 +119,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 clients_table_name,
                 "is_email_verified",
-                SqlDatatype::Tinyint(1),
+                SqlDatatype::Tinyint(1, SqlSigned::Unsigned),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_default(Some(DefaultValue::Value(serde_json::Value::from(0))))
@@ -178,7 +182,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_tokens_table_name,
                 "client_token_id",
-                SqlDatatype::Int(10),
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
@@ -186,9 +190,13 @@ fn get_mock_db() -> Database {
             .to_owned(),
         )
         .set_column(
-            Column::new(client_tokens_table_name, "client_id", SqlDatatype::Int(10))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .to_owned(),
+            Column::new(
+                client_tokens_table_name,
+                "client_id",
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .to_owned(),
         )
         .set_column(Column::new(
             client_tokens_table_name,
@@ -283,11 +291,15 @@ fn get_mock_db() -> Database {
     let mut products_table = Table::new(products_table_name);
     products_table
         .set_column(
-            Column::new(products_table_name, "product_id", SqlDatatype::Int(10))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
-                .set_meta_flag(METADATA_FLAG_PRIMARY)
-                .to_owned(),
+            Column::new(
+                products_table_name,
+                "product_id",
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
+            .set_meta_flag(METADATA_FLAG_PRIMARY)
+            .to_owned(),
         )
         .set_column(
             Column::new(products_table_name, "name", SqlDatatype::Varchar(255))
@@ -295,10 +307,14 @@ fn get_mock_db() -> Database {
                 .to_owned(),
         )
         .set_column(
-            Column::new(products_table_name, "is_enabled", SqlDatatype::Tinyint(1))
-                .set_meta_flag(METADATA_FLAG_UNSIGNED)
-                .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
-                .to_owned(),
+            Column::new(
+                products_table_name,
+                "is_enabled",
+                SqlDatatype::Tinyint(1, SqlSigned::Unsigned),
+            )
+            .set_meta_flag(METADATA_FLAG_UNSIGNED)
+            .set_default(Some(DefaultValue::Value(serde_json::Value::from(1))))
+            .to_owned(),
         );
 
     if let Some(product_id_col) = products_table.column("product_id") {
@@ -320,7 +336,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_products_table_name,
                 "client_product_id",
-                SqlDatatype::Int(10),
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .set_meta_flag(METADATA_FLAG_AUTO_INCREMENT)
@@ -331,7 +347,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_products_table_name,
                 "client_id",
-                SqlDatatype::Int(10),
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .to_owned(),
@@ -340,7 +356,7 @@ fn get_mock_db() -> Database {
             Column::new(
                 client_products_table_name,
                 "product_id",
-                SqlDatatype::Int(10),
+                SqlDatatype::Int(10, SqlSigned::Unsigned),
             )
             .set_meta_flag(METADATA_FLAG_UNSIGNED)
             .to_owned(),

@@ -1,5 +1,7 @@
+use crate::metadata::consts::METADATA_FLAG_UNSIGNED;
 use crate::metadata::WithMetadata;
 use crate::reflection::datatypes::{DefaultValue, JsonDatatype, RustDatatype, SqlDatatype};
+use crate::reflection::SqlSigned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -31,14 +33,20 @@ impl WithMetadata for Column {
 impl Column {
     /// Create a new column by supplying at minimum its name, type and table
     pub fn new(table: impl ToString, name: impl ToString, datatype: SqlDatatype) -> Column {
-        Column {
+        let mut c = Column {
             table: Rc::new(table.to_string()),
             name: Rc::new(name.to_string()),
             datatype: datatype.clone(),
             datatype_json: (&datatype).into(),
             datatype_rust: (&datatype).into(),
             ..Default::default()
+        };
+
+        if datatype.sign() == Some(SqlSigned::Unsigned) {
+            c.set_meta_flag(METADATA_FLAG_UNSIGNED);
         }
+
+        c
     }
 
     /// Set an optional default value

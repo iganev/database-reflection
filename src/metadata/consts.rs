@@ -5,7 +5,7 @@ pub const METADATA_CHARSET: &str = "charset";
 /// database, table or column collation
 pub const METADATA_COLLATION: &str = "collation";
 #[allow(dead_code)]
-/// constraint action ON UPDATE
+/// constraint action ON UPDATE or TIMESTAMP internal update
 pub const METADATA_ON_UPDATE: &str = "on_update";
 #[allow(dead_code)]
 /// constraint action ON DELETE
@@ -26,6 +26,14 @@ pub const METADATA_FLAG_NULLABLE: &str = "nullable";
 #[allow(dead_code)]
 /// for marking primary keys
 pub const METADATA_FLAG_PRIMARY: &str = "primary";
+/// for marking unique indexes
+pub const METADATA_FLAG_UNIQUE: &str = "unique";
 #[allow(dead_code)]
 /// primary key columns are usually AUTO INCREMENT
 pub const METADATA_FLAG_AUTO_INCREMENT: &str = "auto_increment";
+#[allow(dead_code)]
+/// TIMESTAMP DEFAULT
+pub const METADATA_FLAG_DEFAULT_CURRENT_TIMESTAMP: &str = "current_timestamp()";
+#[allow(dead_code)]
+/// TIMESTAMP ON UPDATE trigger
+pub const METADATA_FLAG_ON_UPDATE_CURRENT_TIMESTAMP: &str = "on update current_timestamp()";

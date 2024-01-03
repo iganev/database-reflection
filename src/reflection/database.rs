@@ -1,3 +1,4 @@
+use crate::metadata::consts::{METADATA_CHARSET, METADATA_COLLATION};
 use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
 use crate::reflection::constraint::{Constraint, ConstraintSide};
@@ -42,7 +43,23 @@ impl Database {
     }
 
     /// Add a table to the database
-    pub fn set_table(&mut self, table: Table) -> &mut Database {
+    pub fn set_table(&mut self, mut table: Table) -> &mut Database {
+        if table.meta(METADATA_CHARSET) == None
+            && table.meta(METADATA_COLLATION) == None
+            && self.meta(METADATA_CHARSET).is_some()
+            && self.meta(METADATA_COLLATION).is_some()
+        {
+            table
+                .set_meta(
+                    METADATA_CHARSET,
+                    self.meta(METADATA_CHARSET).unwrap_or_default(),
+                )
+                .set_meta(
+                    METADATA_COLLATION,
+                    self.meta(METADATA_COLLATION).unwrap_or_default(),
+                );
+        }
+
         for (constraint_name, constraint) in table.constraints() {
             self.constraints
                 .insert(constraint_name.clone(), constraint.clone());
