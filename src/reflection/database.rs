@@ -60,11 +60,6 @@ impl Database {
                 );
         }
 
-        for (constraint_name, constraint) in table.constraints() {
-            self.constraints
-                .insert(constraint_name.clone(), constraint.clone());
-        }
-
         self.tables.insert(table.name(), Rc::new(table));
 
         self
@@ -78,6 +73,19 @@ impl Database {
     /// Get tables iterator
     pub fn tables(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Table>> {
         self.tables.iter()
+    }
+
+    /// Add a constraint to the database
+    pub fn set_constraint(&mut self, constraint: Constraint) -> &mut Database {
+
+        self.constraints.insert(constraint.name(), Rc::new(constraint));
+
+        self
+    }
+
+    /// Find a constraint by name
+    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint>> {
+        self.constraints.get(&key.to_string()).cloned()
     }
 
     /// Get constraints iterator
@@ -130,4 +138,24 @@ impl Database {
             .cloned()
             .collect::<Vec<Rc<Constraint>>>()
     }
+
+    /// Find constraints by column name
+    pub fn constraints_by_column_name(&self, column_name: Rc<String>, side: Option<ConstraintSide>,) -> Vec<Rc<Constraint>> {
+        self.constraints
+            .values()
+            .filter(|c| {
+                if c.local().name() == column_name && (side != Some(ConstraintSide::Foreign)) {
+                    return true;
+                }
+
+                if c.foreign().name() == column_name && (side != Some(ConstraintSide::Local)) {
+                    return true;
+                }
+
+                false
+            })
+            .cloned()
+            .collect::<Vec<Rc<Constraint>>>()
+    }
+
 }

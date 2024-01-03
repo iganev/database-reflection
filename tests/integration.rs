@@ -264,21 +264,6 @@ fn get_mock_db() -> Database {
         ));
     }
 
-    if let Some(clients_table) = db.table("clients") {
-        if let Some(client_id_col) = clients_table.column("client_id") {
-            client_tokens_table.set_constraint(
-                Constraint::new(
-                    "fk_client_tokens_1",
-                    client_tokens_table.column("client_id").unwrap(),
-                    client_id_col,
-                )
-                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                .to_owned(),
-            );
-        }
-    }
-
     client_tokens_table
         .set_meta(METADATA_CHARSET, "utf8mb4")
         .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
@@ -384,41 +369,70 @@ fn get_mock_db() -> Database {
         false,
     ));
 
-    if let Some(clients_table) = db.table("clients") {
-        if let Some(client_id_col) = clients_table.column("client_id") {
-            client_products_table.set_constraint(
-                Constraint::new(
-                    "fk_client_products_1",
-                    client_products_table.column("client_id").unwrap(),
-                    client_id_col,
-                )
-                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                .to_owned(),
-            );
-        }
-    }
-
-    if let Some(products_table) = db.table("products") {
-        if let Some(product_id_col) = products_table.column("product_id") {
-            client_products_table.set_constraint(
-                Constraint::new(
-                    "fk_client_products_2",
-                    client_products_table.column("product_id").unwrap(),
-                    product_id_col,
-                )
-                .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
-                .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
-                .to_owned(),
-            );
-        }
-    }
-
     client_products_table
         .set_meta(METADATA_CHARSET, "utf8mb4")
         .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
     db.set_table(client_products_table);
+
+    // set constraints
+
+    if let Some(clients_table) = db.table("clients") {
+        if let Some(client_id_col) = clients_table.column("client_id") {
+            if let Some(client_tokens_table) = db.table("client_tokens") {
+                if let Some(client_tokens_client_id_col) = client_tokens_table.column("client_id") {
+                    db.set_constraint(
+                        Constraint::new(
+                            "fk_client_tokens_1",
+                            client_tokens_client_id_col,
+                            client_id_col,
+                        )
+                            .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                            .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                            .to_owned(),
+                    );
+                }
+            }
+        }
+    }
+
+    if let Some(clients_table) = db.table("clients") {
+        if let Some(client_id_col) = clients_table.column("client_id") {
+            if let Some(clients_products_table) = db.table("client_products") {
+                if let Some(clients_products_client_id_col) = clients_products_table.column("client_id") {
+                    db.set_constraint(
+                        Constraint::new(
+                            "fk_client_products_1",
+                            clients_products_client_id_col,
+                            client_id_col,
+                        )
+                            .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                            .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                            .to_owned(),
+                    );
+                }
+            }
+        }
+    }
+
+    if let Some(products_table) = db.table("products") {
+        if let Some(product_id_col) = products_table.column("product_id") {
+            if let Some(client_products_table) = db.table("client_products") {
+                if let Some(client_products_product_id_col) = client_products_table.column("product_id") {
+                    db.set_constraint(
+                        Constraint::new(
+                            "fk_client_products_2",
+                            client_products_product_id_col,
+                            product_id_col,
+                        )
+                            .set_meta(METADATA_ON_DELETE, METADATA_CASCADE)
+                            .set_meta(METADATA_ON_UPDATE, METADATA_CASCADE)
+                            .to_owned(),
+                    );
+                }
+            }
+        }
+    }
 
     db
 }
@@ -448,9 +462,7 @@ fn construction() {
     }
 
     assert_eq!(
-        db.table("client_products")
-            .unwrap()
-            .constraint("fk_client_products_1")
+        db.constraint("fk_client_products_1")
             .unwrap()
             .foreign()
             .table()
@@ -459,9 +471,8 @@ fn construction() {
     );
 
     assert_eq!(
-        db.table("client_products")
-            .unwrap()
-            .constraint_by_column_name(String::from("client_id").into())
+        db.constraints_by_column_name(String::from("client_id").into(), Some(ConstraintSide::Foreign))
+            .first()
             .unwrap()
             .foreign()
             .table()
@@ -470,15 +481,14 @@ fn construction() {
     );
 
     assert_eq!(
-        db.table("client_products")
-            .unwrap()
-            .constraint_by_column(
+        db.constraints_by_column(
                 db.table("client_products")
                     .unwrap()
                     .column("client_id")
-                    .unwrap()
-                    .as_ref()
+                    .unwrap(),
+                Some(ConstraintSide::Local)
             )
+            .first()
             .unwrap()
             .foreign()
             .table()
@@ -529,12 +539,12 @@ fn construction() {
 
     //
 
-    assert_eq!(db.table("client_products").unwrap().constraints().len(), 2);
+    assert_eq!(db.constraints_by_table(db.table("client_products").unwrap(), Some(ConstraintSide::Local)).len(), 2);
 
     let constr_list = vec!["fk_client_products_1", "fk_client_products_2"];
-    for (constr_name, constr) in db.table("client_products").unwrap().constraints() {
-        assert_eq!(constr_name.as_str(), constr.name().as_str());
-        assert!(constr_list.contains(&constr_name.as_str()));
+    for constr in db.constraints_by_table(db.table("client_products").unwrap(), Some(ConstraintSide::Local)) {
+        assert_eq!(constr.name().as_str(), constr.name().as_str());
+        assert!(constr_list.contains(&constr.name().as_str()));
     }
 
     //

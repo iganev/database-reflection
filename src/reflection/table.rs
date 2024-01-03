@@ -1,7 +1,6 @@
 use crate::metadata::consts::{METADATA_CHARSET, METADATA_COLLATION, METADATA_FLAG_PRIMARY};
 use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
-use crate::reflection::constraint::Constraint;
 use crate::reflection::index::Index;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -14,7 +13,6 @@ pub struct Table {
     name: Rc<String>,
     primary_key: Vec<Rc<String>>,
     columns: IndexMap<Rc<String>, Rc<Column>>,
-    constraints: HashMap<Rc<String>, Rc<Constraint>>,
     indexes: IndexMap<Rc<String>, Index>,
     metadata: HashMap<String, String>,
 }
@@ -81,40 +79,6 @@ impl Table {
     /// Get columns iterator
     pub fn columns(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Column>> {
         self.columns.iter()
-    }
-
-    /// Add a new constraint
-    pub fn set_constraint(&mut self, constraint: Constraint) -> &mut Table {
-        self.constraints
-            .insert(constraint.name(), Rc::new(constraint));
-
-        self
-    }
-
-    /// Find a constraint by name
-    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint>> {
-        self.constraints.get(&key.to_string()).cloned()
-    }
-
-    /// Find a constraint by local column name
-    pub fn constraint_by_column_name(&self, column_name: Rc<String>) -> Option<Rc<Constraint>> {
-        self.constraints
-            .iter()
-            .find(|(_, c)| c.local().name() == column_name)
-            .map(|(_, c)| c.clone())
-    }
-
-    /// Find a constraint by local column
-    pub fn constraint_by_column(&self, column: &Column) -> Option<Rc<Constraint>> {
-        self.constraints
-            .iter()
-            .find(|(_, c)| c.local() == column)
-            .map(|(_, c)| c.clone())
-    }
-
-    /// Get constraints iterator
-    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
-        self.constraints.iter()
     }
 
     /// Add a new index
