@@ -4,12 +4,12 @@ use crate::reflection::datatypes::{DefaultValue, JsonDatatype, RustDatatype, Sql
 use crate::reflection::SqlSigned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Column {
-    table: Rc<String>,
-    name: Rc<String>,
+    table: Arc<String>,
+    name: Arc<String>,
     datatype: SqlDatatype,
     datatype_json: JsonDatatype,
     datatype_rust: RustDatatype,
@@ -34,8 +34,8 @@ impl Column {
     /// Create a new column by supplying at minimum its name, type and table
     pub fn new(table: impl ToString, name: impl ToString, datatype: SqlDatatype) -> Column {
         let mut c = Column {
-            table: Rc::new(table.to_string()),
-            name: Rc::new(name.to_string()),
+            table: Arc::new(table.to_string()),
+            name: Arc::new(name.to_string()),
             datatype: datatype.clone(),
             datatype_json: (&datatype).into(),
             datatype_rust: (&datatype).into(),
@@ -56,12 +56,12 @@ impl Column {
     }
 
     /// Get table name
-    pub fn table(&self) -> Rc<String> {
+    pub fn table(&self) -> Arc<String> {
         self.table.clone()
     }
 
     /// Get column name
-    pub fn name(&self) -> Rc<String> {
+    pub fn name(&self) -> Arc<String> {
         self.name.clone()
     }
 

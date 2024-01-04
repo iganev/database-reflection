@@ -2,8 +2,8 @@ use crate::metadata::WithMetadata;
 use crate::reflection::column::Column;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::slice::Iter;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ConstraintSide {
@@ -13,13 +13,13 @@ pub enum ConstraintSide {
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct ConstraintKeyPair {
-    pub local: Rc<Column>,
-    pub foreign: Rc<Column>,
+    pub local: Arc<Column>,
+    pub foreign: Arc<Column>,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Constraint {
-    name: Rc<String>,
+    name: Arc<String>,
     key_pairs: Vec<ConstraintKeyPair>,
     metadata: HashMap<String, String>,
 }
@@ -38,16 +38,16 @@ impl WithMetadata for Constraint {
 
 impl Constraint {
     /// Create a new constraint with at least one local and foreign column pair
-    pub fn new(name: impl ToString, local: Rc<Column>, foreign: Rc<Column>) -> Self {
+    pub fn new(name: impl ToString, local: Arc<Column>, foreign: Arc<Column>) -> Self {
         Constraint {
-            name: Rc::new(name.to_string()),
+            name: Arc::new(name.to_string()),
             key_pairs: vec![ConstraintKeyPair { local, foreign }],
             ..Default::default()
         }
     }
 
     /// Get constraint name
-    pub fn name(&self) -> Rc<String> {
+    pub fn name(&self) -> Arc<String> {
         self.name.clone()
     }
 
@@ -62,7 +62,7 @@ impl Constraint {
     }
 
     /// Add a local/foreign column pair
-    pub fn add_key_pair(&mut self, local: Rc<Column>, foreign: Rc<Column>) -> &mut Constraint {
+    pub fn add_key_pair(&mut self, local: Arc<Column>, foreign: Arc<Column>) -> &mut Constraint {
         self.key_pairs.push(ConstraintKeyPair { local, foreign });
 
         self

@@ -16,5 +16,4 @@ fn test_consts_are_public() {
     assert!(METADATA_FLAG_AUTO_INCREMENT.len() > 0);
     assert!(METADATA_FLAG_DEFAULT_CURRENT_TIMESTAMP.len() > 0);
     assert!(METADATA_FLAG_ON_UPDATE_CURRENT_TIMESTAMP.len() > 0);
-
 }

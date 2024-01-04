@@ -5,15 +5,15 @@ use crate::reflection::index::Index;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::slice::Iter;
+use std::sync::Arc;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Table {
-    name: Rc<String>,
-    primary_key: Vec<Rc<String>>,
-    columns: IndexMap<Rc<String>, Rc<Column>>,
-    indexes: IndexMap<Rc<String>, Index>,
+    name: Arc<String>,
+    primary_key: Vec<Arc<String>>,
+    columns: IndexMap<Arc<String>, Arc<Column>>,
+    indexes: IndexMap<Arc<String>, Index>,
     metadata: HashMap<String, String>,
 }
 
@@ -33,13 +33,13 @@ impl Table {
     /// Create a new empty table
     pub fn new(name: impl ToString) -> Table {
         Table {
-            name: Rc::new(name.to_string()),
+            name: Arc::new(name.to_string()),
             ..Default::default()
         }
     }
 
     /// Get table name
-    pub fn name(&self) -> Rc<String> {
+    pub fn name(&self) -> Arc<String> {
         self.name.clone()
     }
 
@@ -66,18 +66,18 @@ impl Table {
             self.primary_key.push(column.name());
         }
 
-        self.columns.insert(column.name(), Rc::new(column));
+        self.columns.insert(column.name(), Arc::new(column));
 
         self
     }
 
     /// Find a column by name
-    pub fn column(&self, key: &str) -> Option<Rc<Column>> {
+    pub fn column(&self, key: &str) -> Option<Arc<Column>> {
         self.columns.get(&key.to_string()).cloned()
     }
 
     /// Get columns iterator
-    pub fn columns(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Column>> {
+    pub fn columns(&self) -> indexmap::map::Iter<'_, Arc<String>, Arc<Column>> {
         self.columns.iter()
     }
 
@@ -98,7 +98,7 @@ impl Table {
     }
 
     /// Find an index by column name
-    pub fn index_by_column_name(&self, column_name: Rc<String>) -> Option<Index> {
+    pub fn index_by_column_name(&self, column_name: Arc<String>) -> Option<Index> {
         self.indexes
             .iter()
             .find(|(_, c)| c.column().name() == column_name)
@@ -114,7 +114,7 @@ impl Table {
     }
 
     /// Get indexes iterator
-    pub fn indexes(&self) -> indexmap::map::Iter<'_, Rc<String>, Index> {
+    pub fn indexes(&self) -> indexmap::map::Iter<'_, Arc<String>, Index> {
         self.indexes.iter()
     }
 
@@ -124,12 +124,12 @@ impl Table {
     }
 
     /// Get primary key, or first primary key column name
-    pub fn primary_key(&self) -> Option<Rc<String>> {
+    pub fn primary_key(&self) -> Option<Arc<String>> {
         self.primary_key.first().cloned()
     }
 
     /// Get primary key column or first primary key column
-    pub fn primary_key_column(&self) -> Option<Rc<Column>> {
+    pub fn primary_key_column(&self) -> Option<Arc<Column>> {
         self.primary_key
             .first()
             .map(|k| self.columns.get(k).cloned())
@@ -137,16 +137,16 @@ impl Table {
     }
 
     /// Get primary keys iterator
-    pub fn primary_keys(&self) -> Iter<'_, Rc<String>> {
+    pub fn primary_keys(&self) -> Iter<'_, Arc<String>> {
         self.primary_key.iter()
     }
 
     /// Get primary key columns
-    pub fn primary_key_columns(&self) -> Vec<Rc<Column>> {
+    pub fn primary_key_columns(&self) -> Vec<Arc<Column>> {
         self.columns
             .iter()
             .filter(|kv| self.primary_key.contains(kv.0))
             .map(|kv| kv.1.clone())
-            .collect::<Vec<Rc<Column>>>()
+            .collect::<Vec<Arc<Column>>>()
     }
 }

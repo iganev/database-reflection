@@ -1,20 +1,20 @@
 use crate::reflection::column::Column;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Index {
-    name: Rc<String>,
-    column: Rc<Column>,
+    name: Arc<String>,
+    column: Arc<Column>,
     primary: bool,
     unique: bool,
 }
 
 impl Index {
     /// Create an index
-    pub fn new(name: impl ToString, column: Rc<Column>, primary: bool, unique: bool) -> Self {
+    pub fn new(name: impl ToString, column: Arc<Column>, primary: bool, unique: bool) -> Self {
         Index {
-            name: Rc::new(name.to_string()),
+            name: Arc::new(name.to_string()),
             column,
             primary,
             unique,
@@ -22,7 +22,7 @@ impl Index {
     }
 
     /// Get index name
-    pub fn name(&self) -> Rc<String> {
+    pub fn name(&self) -> Arc<String> {
         self.name.clone()
     }
 

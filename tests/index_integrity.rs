@@ -1,9 +1,9 @@
 use database_reflection::reflection::{Column, Index, SqlDatatype, SqlSigned};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[test]
 fn test_index_integrity() {
-    let column = Rc::new(Column::new(
+    let column = Arc::new(Column::new(
         "local",
         "local_id",
         SqlDatatype::Int(10, SqlSigned::Unsigned),

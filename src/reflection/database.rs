@@ -6,13 +6,13 @@ use crate::reflection::table::Table;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Database {
     name: String,
-    tables: IndexMap<Rc<String>, Rc<Table>>,
-    constraints: HashMap<Rc<String>, Rc<Constraint>>,
+    tables: IndexMap<Arc<String>, Arc<Table>>,
+    constraints: HashMap<Arc<String>, Arc<Constraint>>,
     metadata: HashMap<String, String>,
 }
 
@@ -60,45 +60,47 @@ impl Database {
                 );
         }
 
-        self.tables.insert(table.name(), Rc::new(table));
+        self.tables.insert(table.name(), Arc::new(table));
 
         self
     }
 
     /// Get a table by name
-    pub fn table(&self, key: &str) -> Option<Rc<Table>> {
+    pub fn table(&self, key: &str) -> Option<Arc<Table>> {
         self.tables.get(&key.to_string()).cloned()
     }
 
     /// Get tables iterator
-    pub fn tables(&self) -> indexmap::map::Iter<'_, Rc<String>, Rc<Table>> {
+    pub fn tables(&self) -> indexmap::map::Iter<'_, Arc<String>, Arc<Table>> {
         self.tables.iter()
     }
 
     /// Add a constraint to the database
     pub fn set_constraint(&mut self, constraint: Constraint) -> &mut Database {
-
-        self.constraints.insert(constraint.name(), Rc::new(constraint));
+        self.constraints
+            .insert(constraint.name(), Arc::new(constraint));
 
         self
     }
 
     /// Find a constraint by name
-    pub fn constraint(&self, key: &str) -> Option<Rc<Constraint>> {
+    pub fn constraint(&self, key: &str) -> Option<Arc<Constraint>> {
         self.constraints.get(&key.to_string()).cloned()
     }
 
     /// Get constraints iterator
-    pub fn constraints(&self) -> std::collections::hash_map::Iter<'_, Rc<String>, Rc<Constraint>> {
+    pub fn constraints(
+        &self,
+    ) -> std::collections::hash_map::Iter<'_, Arc<String>, Arc<Constraint>> {
         self.constraints.iter()
     }
 
     /// Search for constraints by local or foreign table name
     pub fn constraints_by_table(
         &self,
-        table: Rc<Table>,
+        table: Arc<Table>,
         side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint>> {
+    ) -> Vec<Arc<Constraint>> {
         self.constraints
             .values()
             .filter(|c| {
@@ -113,15 +115,15 @@ impl Database {
                 false
             })
             .cloned()
-            .collect::<Vec<Rc<Constraint>>>()
+            .collect::<Vec<Arc<Constraint>>>()
     }
 
     /// Search for constraints by local or foreign column
     pub fn constraints_by_column(
         &self,
-        column: Rc<Column>,
+        column: Arc<Column>,
         side: Option<ConstraintSide>,
-    ) -> Vec<Rc<Constraint>> {
+    ) -> Vec<Arc<Constraint>> {
         self.constraints
             .values()
             .filter(|c| {
@@ -136,11 +138,15 @@ impl Database {
                 false
             })
             .cloned()
-            .collect::<Vec<Rc<Constraint>>>()
+            .collect::<Vec<Arc<Constraint>>>()
     }
 
     /// Find constraints by column name
-    pub fn constraints_by_column_name(&self, column_name: Rc<String>, side: Option<ConstraintSide>,) -> Vec<Rc<Constraint>> {
+    pub fn constraints_by_column_name(
+        &self,
+        column_name: Arc<String>,
+        side: Option<ConstraintSide>,
+    ) -> Vec<Arc<Constraint>> {
         self.constraints
             .values()
             .filter(|c| {
@@ -155,7 +161,6 @@ impl Database {
                 false
             })
             .cloned()
-            .collect::<Vec<Rc<Constraint>>>()
+            .collect::<Vec<Arc<Constraint>>>()
     }
-
 }
