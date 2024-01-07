@@ -2,6 +2,7 @@
 name = "database-reflection"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.75.0"
 authors = ["Ivan Ganev <iganev@cytec.bg>"]
 description = "Database reflection library. Currently supporting only MariaDB and MySQL with InnoDB."
 keywords = ["sqlx", "database", "reflection", "mysql", "mariadb"]
