@@ -1,3 +1,9 @@
+[![Crates.io](https://img.shields.io/crates/v/database-reflection?color=4d76ae)](https://crates.io/crates/database-reflection)
+[![API](https://docs.rs/database-reflection/badge.svg)](https://docs.rs/database-reflection)
+[![dependency status](https://deps.rs/repo/github/iganev/database-reflection/status.svg)](https://deps.rs/repo/github/iganev/database-reflection)
+[![Build and Test](https://github.com/iganev/database-reflection/actions/workflows/rust.yml/badge.svg)](https://github.com/iganev/database-reflection/actions/workflows/rust.yml)
+[![codecov](https://codecov.io/github/iganev/database-reflection/graph/badge.svg?token=B5P2TAV5BB)](https://codecov.io/github/iganev/database-reflection)
+
 # database-reflection
 Collection of Rust structs and traits to construct a high-level database reflection.  
 Currently under development. Subject to breaking changes and documentation struggles.  
@@ -40,4 +46,4 @@ Note: `connection_str` is a standard DSN.
 
 ## License
 
-This library (handlebars-concat) is open sourced under the MIT License. 
+This library (database-reflection) is open sourced under the MIT License. 
