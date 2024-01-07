@@ -2,11 +2,26 @@
 name = "database-reflection"
 version = "0.1.0"
 edition = "2021"
+authors = ["Ivan Ganev <iganev@cytec.bg>"]
+description = "Database reflection library. Currently supporting only MariaDB and MySQL with InnoDB."
+keywords = ["sqlx", "database", "reflection", "mysql", "mariadb"]
+categories = ["database", "data-structures", "development-tools"]
+homepage = "https://github.com/iganev/database-reflection"
+repository = "https://github.com/iganev/database-reflection"
+documentation = "https://docs.rs/crate/database-reflection/"
+readme = "README.md"
+license = "MIT"
+
+[lib]
+name = "database_reflection"
+path = "src/lib.rs"
+
+[features]
+mariadb = [ "sqlx/mysql" ]
 
 [dependencies]
-sqlx = { version = "^0.6", features = ["runtime-tokio-rustls", "mysql"] }
+sqlx = { version = "^0.6", features = ["runtime-tokio-rustls"] }
 serde = { version = "^1", features = ["derive", "rc"] }
-#serde_with = { version = "^3" }
 serde_json = { version = "^1" }
 indexmap = { version = "^2", features = ["serde"] }
 

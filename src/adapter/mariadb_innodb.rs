@@ -279,7 +279,8 @@ impl ReflectionAdapter<MariadbInnodbReflectionAdapter<Uninitialized>>
                 .as_str(),
             )
             .fetch_all(self.get_connection())
-            .await.map_err(|e| DatabaseError(e))?;
+            .await
+            .map_err(|e| DatabaseError(e))?;
 
         for foreign_key in foreign_keys {
             let (
