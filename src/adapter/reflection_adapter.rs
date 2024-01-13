@@ -38,10 +38,10 @@ impl Display for ReflectionAdapterError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ReflectionAdapterError::ConnectionError(e) => {
-                write!(f, "ConnectionError: {}", e.to_string())
+                write!(f, "ConnectionError: {}", e)
             }
             ReflectionAdapterError::DatabaseError(e) => {
-                write!(f, "DatabaseError: {}", e.to_string())
+                write!(f, "DatabaseError: {}", e)
             }
             ReflectionAdapterError::ValidationError(e) => write!(f, "ConnectionError: {}", e),
             ReflectionAdapterError::IntegrityError(e) => write!(f, "ConnectionError: {}", e),

@@ -46,8 +46,8 @@ impl Table {
     /// Add a new column to the table
     pub fn set_column(&mut self, mut column: Column) -> &mut Table {
         if column.datatype().is_text()
-            && column.meta(METADATA_CHARSET) == None
-            && column.meta(METADATA_COLLATION) == None
+            && column.meta(METADATA_CHARSET).is_none()
+            && column.meta(METADATA_COLLATION).is_none()
             && self.meta(METADATA_CHARSET).is_some()
             && self.meta(METADATA_COLLATION).is_some()
         {

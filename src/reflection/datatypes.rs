@@ -58,6 +58,7 @@ impl SqlDatatype {
     }
 
     /// Get datatype length
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> Option<u32> {
         match self {
             SqlDatatype::Tinyint(len, _) => Some(*len),
@@ -81,10 +82,7 @@ impl SqlDatatype {
 
     /// Check if column datatype is one of the character types
     pub fn is_text(&self) -> bool {
-        match self {
-            SqlDatatype::Text(_) | SqlDatatype::Varchar(_) | SqlDatatype::Char(_) => true,
-            _ => false,
-        }
+        matches!(self, SqlDatatype::Text(_) | SqlDatatype::Varchar(_) | SqlDatatype::Char(_))
     }
 }
 

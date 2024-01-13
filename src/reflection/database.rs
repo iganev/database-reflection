@@ -44,8 +44,8 @@ impl Database {
 
     /// Add a table to the database
     pub fn set_table(&mut self, mut table: Table) -> &mut Database {
-        if table.meta(METADATA_CHARSET) == None
-            && table.meta(METADATA_COLLATION) == None
+        if table.meta(METADATA_CHARSET).is_none()
+            && table.meta(METADATA_COLLATION).is_none()
             && self.meta(METADATA_CHARSET).is_some()
             && self.meta(METADATA_COLLATION).is_some()
         {
