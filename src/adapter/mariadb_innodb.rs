@@ -1,3 +1,4 @@
+use std::future::Future;
 use crate::adapter::reflection_adapter::ReflectionAdapterError::DatabaseError;
 use crate::adapter::reflection_adapter::{
     Connected, ReflectionAdapter, ReflectionAdapterError, ReflectionAdapterUninitialized, State,
@@ -92,6 +93,13 @@ impl ReflectionAdapter<MariadbInnodbReflectionAdapter<Uninitialized>>
 
     fn get_database_name(&self) -> &str {
         &self.database_name
+    }
+
+    async fn list_database_names(&self) -> Result<Vec<String>, ReflectionAdapterError> {
+        sqlx::query_scalar("SHOW DATABASES")
+            .fetch_all(self.get_connection())
+            .await
+            .map_err(|e| DatabaseError(e))
     }
 
     async fn list_table_names(&self) -> Result<Vec<String>, ReflectionAdapterError> {

@@ -70,6 +70,10 @@ pub trait ReflectionAdapter<T> {
 
     fn get_database_name(&self) -> &str;
 
+    fn list_database_names(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<String>, ReflectionAdapterError>> + Send;
+
     fn list_table_names(
         &self,
     ) -> impl std::future::Future<Output = Result<Vec<String>, ReflectionAdapterError>> + Send;
