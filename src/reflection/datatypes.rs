@@ -334,7 +334,10 @@ impl From<&SqlDatatype> for RustDatatype {
             SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => {
                 RustDatatype(RUST_TYPE_STRING.to_string(), Some(*length))
             }
-            SqlDatatype::Enum(options) | SqlDatatype::Set(options) => {
+            SqlDatatype::Enum(options) => {
+                RustDatatype(RUST_TYPE_STRING.to_string(), Some(options.iter().fold(0u32, |ac, c| if c.len() as u32 > ac { c.len()  as u32 } else { ac })))
+            }
+            SqlDatatype::Set(options) => {
                 RustDatatype(RUST_TYPE_VEC.to_string(), Some(options.len() as u32))
             }
         }

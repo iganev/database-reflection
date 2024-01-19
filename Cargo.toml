@@ -1,6 +1,6 @@
 [package]
 name = "database-reflection"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Ivan Ganev <iganev@cytec.bg>"]
 description = "Database reflection library. Currently supporting only MariaDB and MySQL with InnoDB."
@@ -22,7 +22,7 @@ mariadb = [ "sqlx/mysql" ]
 [dependencies]
 sqlx = { version = "^0.6", features = ["runtime-tokio-rustls"] }
 serde = { version = "^1", features = ["derive", "rc"] }
-serde_json = { version = "^1" }
+serde_json = { version = "^1", features = ["preserve_order"] }
 indexmap = { version = "^2", features = ["serde"] }
 
 [badges]
