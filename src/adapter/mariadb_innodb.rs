@@ -1,4 +1,3 @@
-use std::future::Future;
 use crate::adapter::reflection_adapter::ReflectionAdapterError::DatabaseError;
 use crate::adapter::reflection_adapter::{
     Connected, ReflectionAdapter, ReflectionAdapterError, ReflectionAdapterUninitialized, State,
@@ -14,6 +13,7 @@ use crate::reflection::{Column, Constraint, Database, DefaultValue, Index, SqlDa
 use serde_json::Value;
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::{MySql, Pool};
+use std::future::Future;
 
 #[derive(Clone, Default, Debug)]
 pub struct MariadbInnodbReflectionAdapter<T: State> {

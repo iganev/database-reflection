@@ -82,7 +82,10 @@ impl SqlDatatype {
 
     /// Check if column datatype is one of the character types
     pub fn is_text(&self) -> bool {
-        matches!(self, SqlDatatype::Text(_) | SqlDatatype::Varchar(_) | SqlDatatype::Char(_))
+        matches!(
+            self,
+            SqlDatatype::Text(_) | SqlDatatype::Varchar(_) | SqlDatatype::Char(_)
+        )
     }
 }
 
@@ -334,9 +337,16 @@ impl From<&SqlDatatype> for RustDatatype {
             SqlDatatype::Binary(length) | SqlDatatype::Varbinary(length) => {
                 RustDatatype(RUST_TYPE_STRING.to_string(), Some(*length))
             }
-            SqlDatatype::Enum(options) => {
-                RustDatatype(RUST_TYPE_STRING.to_string(), Some(options.iter().fold(0u32, |ac, c| if c.len() as u32 > ac { c.len()  as u32 } else { ac })))
-            }
+            SqlDatatype::Enum(options) => RustDatatype(
+                RUST_TYPE_STRING.to_string(),
+                Some(options.iter().fold(0u32, |ac, c| {
+                    if c.len() as u32 > ac {
+                        c.len() as u32
+                    } else {
+                        ac
+                    }
+                })),
+            ),
             SqlDatatype::Set(options) => {
                 RustDatatype(RUST_TYPE_VEC.to_string(), Some(options.len() as u32))
             }
