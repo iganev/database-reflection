@@ -274,6 +274,11 @@ fn get_mock_db() -> Database {
 
     let products_table_name = "products";
     let mut products_table = Table::new(products_table_name);
+
+    products_table
+        .set_meta(METADATA_CHARSET, "utf8mb4")
+        .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+
     products_table
         .set_column(
             Column::new(
@@ -369,9 +374,10 @@ fn get_mock_db() -> Database {
         false,
     ));
 
-    client_products_table
-        .set_meta(METADATA_CHARSET, "utf8mb4")
-        .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
+    // we expect that the table will inherit the database charset and collation
+    // client_products_table
+    //     .set_meta(METADATA_CHARSET, "utf8mb4")
+    //     .set_meta(METADATA_COLLATION, "utf8mb4_unicode_ci");
 
     db.set_table(client_products_table);
 
@@ -488,6 +494,19 @@ fn construction() {
     );
 
     assert_eq!(
+        db.constraints_by_column_name(
+            String::from("client_id").into(),
+            Some(ConstraintSide::Local)
+        )
+            .first()
+            .unwrap()
+            .foreign()
+            .table()
+            .as_str(),
+        "clients"
+    );
+
+    assert_eq!(
         db.constraints_by_column(
             db.table("client_products")
                 .unwrap()
@@ -563,6 +582,30 @@ fn construction() {
         assert_eq!(constr.name().as_str(), constr.name().as_str());
         assert!(constr_list.contains(&constr.name().as_str()));
     }
+
+    //
+
+    assert_eq!(
+        db.table("client_products").unwrap().meta(METADATA_CHARSET),
+        Some("utf8mb4".to_string())
+    );
+
+    assert_eq!(
+        db.table("client_products").unwrap().meta(METADATA_COLLATION),
+        Some("utf8mb4_unicode_ci".to_string())
+    );
+
+    //
+
+    assert_eq!(
+        db.table("products").unwrap().column("name").unwrap().meta(METADATA_CHARSET),
+        Some("utf8mb4".to_string())
+    );
+
+    assert_eq!(
+        db.table("products").unwrap().column("name").unwrap().meta(METADATA_COLLATION),
+        Some("utf8mb4_unicode_ci".to_string())
+    );
 
     //
 

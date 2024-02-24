@@ -9,28 +9,96 @@ fn test_datatypes() {
         Ok(SqlDatatype::Tinyint(1, SqlSigned::Unsigned))
     );
     assert_eq!(
+        SqlDatatype::try_from("tinyint(1) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("tinyint(1) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(1)
+    );
+    assert_eq!(
         SqlDatatype::try_from("int(10) unsigned"),
         Ok(SqlDatatype::Int(10, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("int(10) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("int(10) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(10)
     );
     assert_eq!(
         SqlDatatype::try_from("smallint(5) unsigned"),
         Ok(SqlDatatype::Smallint(5, SqlSigned::Unsigned))
     );
     assert_eq!(
+        SqlDatatype::try_from("smallint(5) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("smallint(5) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(5)
+    );
+    assert_eq!(
         SqlDatatype::try_from("mediumint(15) unsigned"),
         Ok(SqlDatatype::Mediumint(15, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("mediumint(15) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("mediumint(15) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(15)
     );
     assert_eq!(
         SqlDatatype::try_from("bigint(32)"),
         Ok(SqlDatatype::Bigint(32, SqlSigned::Signed))
     );
     assert_eq!(
+        SqlDatatype::try_from("bigint(32)").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Signed)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("bigint(32)").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(32)
+    );
+    assert_eq!(
         SqlDatatype::try_from("float(4,2)"),
         Ok(SqlDatatype::Float(4, 2, SqlSigned::Signed))
     );
     assert_eq!(
+        SqlDatatype::try_from("float(4,2)").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Signed)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("float(4,2)").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(4)
+    );
+    assert_eq!(
         SqlDatatype::try_from("double(10,2) unsigned"),
         Ok(SqlDatatype::Double(10, 2, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("double(10,2) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("double(10,2) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(10)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("decimal(10,2) unsigned"),
+        Ok(SqlDatatype::Decimal(10, 2, SqlSigned::Unsigned))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("decimal(10,2) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
+        Some(SqlSigned::Unsigned)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("decimal(10,2) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
+        Some(10)
     );
 
     assert_eq!(SqlDatatype::try_from("date"), Ok(SqlDatatype::Date));
