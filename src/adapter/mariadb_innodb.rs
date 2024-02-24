@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use crate::adapter::reflection_adapter::ReflectionAdapterError::DatabaseError;
 use crate::adapter::reflection_adapter::{
     Connected, ReflectionAdapter, ReflectionAdapterError, ReflectionAdapterUninitialized, State,
@@ -13,27 +14,29 @@ use crate::reflection::{Column, Constraint, Database, DefaultValue, Index, SqlDa
 use serde_json::Value;
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::{MySql, Pool};
-use std::future::Future;
 
-#[derive(Clone, Default, Debug)]
-pub struct MariadbInnodbReflectionAdapter<T: State> {
+#[derive(Clone, Debug)]
+pub struct MariadbInnodbReflectionAdapter<T: State<MySql>> {
     state: T,
     connection_string: String,
     database_name: String,
 }
 
-impl MariadbInnodbReflectionAdapter<Uninitialized> {
-    pub fn new(connection_string: &str) -> MariadbInnodbReflectionAdapter<Uninitialized> {
-        MariadbInnodbReflectionAdapter::<Uninitialized> {
+impl MariadbInnodbReflectionAdapter<Uninitialized<MySql>> {
+    pub fn new(connection_string: &str) -> MariadbInnodbReflectionAdapter<Uninitialized<MySql>> {
+        MariadbInnodbReflectionAdapter::<Uninitialized<MySql>> {
+            state: Uninitialized::new(),
             connection_string: connection_string.to_string(),
-            ..Default::default()
+            database_name: String::new()
         }
     }
 }
 
-impl ReflectionAdapterUninitialized<MariadbInnodbReflectionAdapter<Connected<MySql>>>
-    for MariadbInnodbReflectionAdapter<Uninitialized>
+impl ReflectionAdapterUninitialized<MySql>
+for MariadbInnodbReflectionAdapter<Uninitialized<MySql>>
 {
+    type ValidAdapter = MariadbInnodbReflectionAdapter<Connected<MySql>>;
+
     fn set_connection_string(&mut self, connection_string: &str) {
         self.connection_string = connection_string.to_string();
     }
@@ -66,12 +69,14 @@ impl MariadbInnodbReflectionAdapter<Connected<MySql>> {
     }
 }
 
-impl ReflectionAdapter<MariadbInnodbReflectionAdapter<Uninitialized>>
-    for MariadbInnodbReflectionAdapter<Connected<MySql>>
+impl ReflectionAdapter<MySql>
+for MariadbInnodbReflectionAdapter<Connected<MySql>>
 {
+    type InvalidAdapter = MariadbInnodbReflectionAdapter<Uninitialized<MySql>>;
+
     async fn disconnect(
         self,
-    ) -> Result<MariadbInnodbReflectionAdapter<Uninitialized>, ReflectionAdapterError> {
+    ) -> Result<MariadbInnodbReflectionAdapter<Uninitialized<MySql>>, ReflectionAdapterError> {
         self.get_connection().close().await;
 
         Ok(MariadbInnodbReflectionAdapter::new(&self.connection_string))

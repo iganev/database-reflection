@@ -1,18 +1,24 @@
 use crate::reflection::{Database, Table};
 use sqlx::{Error, Pool};
 use std::fmt::{Display, Formatter};
+use std::marker::PhantomData;
 use std::ops::Deref;
 
 #[derive(Clone, Default, Debug)]
-pub struct Uninitialized;
+pub struct Uninitialized<DB: sqlx::Database>(PhantomData<DB>);
+impl<DB: sqlx::Database> Uninitialized<DB> {
+    pub fn new() -> Uninitialized<DB> {
+        Uninitialized(PhantomData)
+    }
+}
 #[derive(Clone, Debug)]
 pub struct Connected<DB: sqlx::Database>(Pool<DB>);
 
-pub trait State {}
+pub trait State<DB: sqlx::Database> {}
 
-impl State for Uninitialized {}
+impl<DB: sqlx::Database> State<DB> for Uninitialized<DB> {}
 
-impl<DB: sqlx::Database> State for Connected<DB> {}
+impl<DB: sqlx::Database> State<DB> for Connected<DB> {}
 impl<DB: sqlx::Database> Deref for Connected<DB> {
     type Target = Pool<DB>;
 
@@ -51,17 +57,20 @@ impl Display for ReflectionAdapterError {
 
 impl std::error::Error for ReflectionAdapterError {}
 
-pub trait ReflectionAdapterUninitialized<T> {
+pub trait ReflectionAdapterUninitialized<T: sqlx::Database> {
+    type ValidAdapter: ReflectionAdapter<T>;
+
     fn set_connection_string(&mut self, connection_string: &str);
 
     fn connect(self)
-        -> impl std::future::Future<Output = Result<T, ReflectionAdapterError>> + Send;
+        -> impl std::future::Future<Output = Result<Self::ValidAdapter, ReflectionAdapterError>> + Send;
 }
 
-pub trait ReflectionAdapter<T> {
+pub trait ReflectionAdapter<T: sqlx::Database> {
+    type InvalidAdapter: ReflectionAdapterUninitialized<T>;
     fn disconnect(
         self,
-    ) -> impl std::future::Future<Output = Result<T, ReflectionAdapterError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Self::InvalidAdapter, ReflectionAdapterError>> + Send;
 
     fn set_database_name(
         &mut self,
