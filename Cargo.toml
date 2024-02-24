@@ -20,7 +20,7 @@ path = "src/lib.rs"
 mariadb = [ "sqlx/mysql" ]
 
 [dependencies]
-sqlx = { version = "^0.6", features = ["runtime-tokio-rustls"] }
+sqlx = { version = "^0.7", features = ["runtime-tokio-rustls"] }
 serde = { version = "^1", features = ["derive", "rc"] }
 serde_json = { version = "^1", features = ["preserve_order"] }
 indexmap = { version = "^2", features = ["serde"] }
