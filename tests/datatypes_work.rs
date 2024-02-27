@@ -108,8 +108,10 @@ fn test_datatypes() {
         SqlDatatype::try_from("timestamp"),
         Ok(SqlDatatype::Timestamp)
     );
+    assert_eq!(SqlDatatype::try_from("timestamp").ok().map(|t| t.len()).unwrap_or_default(), None);
 
     assert_eq!(SqlDatatype::try_from("char(64)"), Ok(SqlDatatype::Char(64)));
+    assert_eq!(SqlDatatype::try_from("char(64)").ok().map(|t| t.len()).unwrap_or_default(), Some(64));
     assert_eq!(
         SqlDatatype::try_from("varchar(45)"),
         Ok(SqlDatatype::Varchar(45))
@@ -118,20 +120,25 @@ fn test_datatypes() {
         SqlDatatype::from_str("varchar(64)"),
         Ok(SqlDatatype::Varchar(64))
     );
+    assert_eq!(SqlDatatype::try_from("varchar(64)").ok().map(|t| t.len()).unwrap_or_default(), Some(64));
     assert_eq!(
         SqlDatatype::try_from("text(1024)"),
         Ok(SqlDatatype::Text(1024))
     );
+    assert_eq!(SqlDatatype::try_from("text(1024)").ok().map(|t| t.len()).unwrap_or_default(), Some(1024));
     assert_eq!(SqlDatatype::try_from("text"), Ok(SqlDatatype::Text(65535)));
+    assert_eq!(SqlDatatype::try_from("text").ok().map(|t| t.len()).unwrap_or_default(), Some(65535));
 
     assert_eq!(
         SqlDatatype::try_from("binary(32)"),
         Ok(SqlDatatype::Binary(32))
     );
+    assert_eq!(SqlDatatype::try_from("binary(32)").ok().map(|t| t.len()).unwrap_or_default(), Some(32));
     assert_eq!(
         SqlDatatype::try_from("varbinary(32)"),
         Ok(SqlDatatype::Varbinary(32))
     );
+    assert_eq!(SqlDatatype::try_from("varbinary(32)").ok().map(|t| t.len()).unwrap_or_default(), Some(32));
 
     assert_eq!(
         SqlDatatype::try_from(r#"enum("one","two","three")"#),
@@ -141,6 +148,7 @@ fn test_datatypes() {
             String::from("three")
         ]))
     );
+    assert_eq!(SqlDatatype::try_from(r#"enum("one","two","three")"#).ok().map(|t| t.len()).unwrap_or_default(), Some(3));
     assert_eq!(
         SqlDatatype::try_from(r#"set("this","that")"#),
         Ok(SqlDatatype::Set(vec![
@@ -148,6 +156,7 @@ fn test_datatypes() {
             String::from("that")
         ]))
     );
+    assert_eq!(SqlDatatype::try_from(r#"set("this","that")"#).ok().map(|t| t.len()).unwrap_or_default(), Some(2));
 
     assert_eq!(
         SqlDatatype::try_from("varchar(nan)"),
