@@ -1,4 +1,4 @@
-use database_reflection::reflection::{DefaultValue, JsonDatatype, JsonNumber, JsonString, ParseDatatypeError, SqlDatatype, SqlSigned};
+use database_reflection::reflection::{DefaultValue, JsonDatatype, JsonNumber, JsonString, ParseDatatypeError, RustDatatype, SqlDatatype, SqlSigned};
 use serde_json::Value;
 use std::str::FromStr;
 
@@ -21,12 +21,24 @@ fn test_datatypes() {
         Ok(SqlDatatype::Int(10, SqlSigned::Unsigned))
     );
     assert_eq!(
+        SqlDatatype::try_from("int(10)"),
+        Ok(SqlDatatype::Int(10, SqlSigned::Signed))
+    );
+    assert_eq!(
         SqlDatatype::try_from("int(10) unsigned").ok().map(|t| t.sign()).unwrap_or_default(),
         Some(SqlSigned::Unsigned)
     );
     assert_eq!(
         SqlDatatype::try_from("int(10) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
         Some(10)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("int(10) unsigned").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("u32".to_string(), Some(10)))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("int(10)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("i32".to_string(), Some(10)))
     );
     assert_eq!(
         SqlDatatype::try_from("smallint(5) unsigned"),
@@ -41,6 +53,10 @@ fn test_datatypes() {
         Some(5)
     );
     assert_eq!(
+        SqlDatatype::try_from("smallint(5)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("i32".to_string(), Some(5)))
+    );
+    assert_eq!(
         SqlDatatype::try_from("mediumint(15) unsigned"),
         Ok(SqlDatatype::Mediumint(15, SqlSigned::Unsigned))
     );
@@ -51,6 +67,10 @@ fn test_datatypes() {
     assert_eq!(
         SqlDatatype::try_from("mediumint(15) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
         Some(15)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("mediumint(15)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("i32".to_string(), Some(15)))
     );
     assert_eq!(
         SqlDatatype::try_from("bigint(32)"),
@@ -69,6 +89,14 @@ fn test_datatypes() {
         Ok(JsonDatatype::Number(JsonNumber::BigInt))
     );
     assert_eq!(
+        SqlDatatype::try_from("bigint(32) unsigned").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("u64".to_string(), Some(32)))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("bigint(32)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("i64".to_string(), Some(32)))
+    );
+    assert_eq!(
         SqlDatatype::try_from("float(4,2)"),
         Ok(SqlDatatype::Float(4, 2, SqlSigned::Signed))
     );
@@ -85,6 +113,10 @@ fn test_datatypes() {
         Ok(JsonDatatype::Number(JsonNumber::Float))
     );
     assert_eq!(
+        SqlDatatype::try_from("float(4,2)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("f32".to_string(), Some(2)))
+    );
+    assert_eq!(
         SqlDatatype::try_from("double(10,2) unsigned"),
         Ok(SqlDatatype::Double(10, 2, SqlSigned::Unsigned))
     );
@@ -99,6 +131,10 @@ fn test_datatypes() {
     assert_eq!(
         SqlDatatype::try_from("double(10,2) unsigned").ok().map(|t| t.len()).unwrap_or_default(),
         Some(10)
+    );
+    assert_eq!(
+        SqlDatatype::try_from("double(10,2)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("f64".to_string(), Some(2)))
     );
     assert_eq!(
         SqlDatatype::try_from("decimal(10,2) unsigned"),
@@ -118,10 +154,18 @@ fn test_datatypes() {
         SqlDatatype::try_from("date").ok().map(|t| (&t).try_into()).unwrap(),
         Ok(JsonDatatype::String(JsonString::Date, Some(10)))
     );
+    assert_eq!(
+        SqlDatatype::try_from("date").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(10)))
+    );
     assert_eq!(SqlDatatype::try_from("time"), Ok(SqlDatatype::Time));
     assert_eq!(
         SqlDatatype::try_from("time").ok().map(|t| (&t).try_into()).unwrap(),
         Ok(JsonDatatype::String(JsonString::Time, Some(8)))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("time").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(8)))
     );
     assert_eq!(SqlDatatype::try_from("datetime"), Ok(SqlDatatype::Datetime));
     assert_eq!(
@@ -132,6 +176,10 @@ fn test_datatypes() {
 
     assert_eq!(SqlDatatype::try_from("char(64)"), Ok(SqlDatatype::Char(64)));
     assert_eq!(SqlDatatype::try_from("char(64)").ok().map(|t| t.len()).unwrap_or_default(), Some(64));
+    assert_eq!(
+        SqlDatatype::try_from("char(64)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(64)))
+    );
     assert_eq!(
         SqlDatatype::try_from("varchar(45)"),
         Ok(SqlDatatype::Varchar(45))
@@ -146,8 +194,16 @@ fn test_datatypes() {
         Ok(JsonDatatype::String(JsonString::String, Some(64)))
     );
     assert_eq!(
+        SqlDatatype::try_from("varchar(64)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(64)))
+    );
+    assert_eq!(
         SqlDatatype::try_from("text(1024)"),
         Ok(SqlDatatype::Text(1024))
+    );
+    assert_eq!(
+        SqlDatatype::try_from("text(1024)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(1024)))
     );
     assert_eq!(SqlDatatype::try_from("text(1024)").ok().map(|t| t.len()).unwrap_or_default(), Some(1024));
     assert_eq!(SqlDatatype::try_from("text"), Ok(SqlDatatype::Text(65535)));
@@ -168,6 +224,10 @@ fn test_datatypes() {
         Ok(JsonDatatype::String(JsonString::String, Some(32)))
     );
     assert_eq!(
+        SqlDatatype::try_from("varbinary(32)").ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(32)))
+    );
+    assert_eq!(
         SqlDatatype::try_from(r#"enum("one","two","three")"#),
         Ok(SqlDatatype::Enum(vec![
             String::from("one"),
@@ -181,6 +241,10 @@ fn test_datatypes() {
         Ok(JsonDatatype::Array(vec!["one".to_string(), "two".to_string(), "three".to_string()]))
     );
     assert_eq!(
+        SqlDatatype::try_from(r#"enum("one","two","three")"#).ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("String".to_string(), Some(5)))
+    );
+    assert_eq!(
         SqlDatatype::try_from(r#"set("this","that")"#),
         Ok(SqlDatatype::Set(vec![
             String::from("this"),
@@ -188,6 +252,10 @@ fn test_datatypes() {
         ]))
     );
     assert_eq!(SqlDatatype::try_from(r#"set("this","that")"#).ok().map(|t| t.len()).unwrap_or_default(), Some(2));
+    assert_eq!(
+        SqlDatatype::try_from(r#"set("this","that")"#).ok().map(|t| (&t).try_into()).unwrap(),
+        Ok(RustDatatype("Vec<String>".to_string(), Some(2)))
+    );
 
     assert_eq!(
         SqlDatatype::try_from("varchar(nan)"),
