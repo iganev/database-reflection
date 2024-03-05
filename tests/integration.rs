@@ -498,11 +498,11 @@ fn construction() {
             String::from("client_id").into(),
             Some(ConstraintSide::Local)
         )
-            .first()
-            .unwrap()
-            .foreign()
-            .table()
-            .as_str(),
+        .first()
+        .unwrap()
+        .foreign()
+        .table()
+        .as_str(),
         "clients"
     );
 
@@ -591,19 +591,29 @@ fn construction() {
     );
 
     assert_eq!(
-        db.table("client_products").unwrap().meta(METADATA_COLLATION),
+        db.table("client_products")
+            .unwrap()
+            .meta(METADATA_COLLATION),
         Some("utf8mb4_unicode_ci".to_string())
     );
 
     //
 
     assert_eq!(
-        db.table("products").unwrap().column("name").unwrap().meta(METADATA_CHARSET),
+        db.table("products")
+            .unwrap()
+            .column("name")
+            .unwrap()
+            .meta(METADATA_CHARSET),
         Some("utf8mb4".to_string())
     );
 
     assert_eq!(
-        db.table("products").unwrap().column("name").unwrap().meta(METADATA_COLLATION),
+        db.table("products")
+            .unwrap()
+            .column("name")
+            .unwrap()
+            .meta(METADATA_COLLATION),
         Some("utf8mb4_unicode_ci".to_string())
     );
 

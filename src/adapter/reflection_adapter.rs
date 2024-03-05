@@ -62,8 +62,9 @@ pub trait ReflectionAdapterUninitialized<T: sqlx::Database> {
 
     fn set_connection_string(&mut self, connection_string: &str);
 
-    fn connect(self)
-        -> impl std::future::Future<Output = Result<Self::ValidAdapter, ReflectionAdapterError>> + Send;
+    fn connect(
+        self,
+    ) -> impl std::future::Future<Output = Result<Self::ValidAdapter, ReflectionAdapterError>> + Send;
 }
 
 pub trait ReflectionAdapter<T: sqlx::Database> {

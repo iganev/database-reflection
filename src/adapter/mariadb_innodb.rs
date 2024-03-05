@@ -1,4 +1,3 @@
-use std::marker::PhantomData;
 use crate::adapter::reflection_adapter::ReflectionAdapterError::DatabaseError;
 use crate::adapter::reflection_adapter::{
     Connected, ReflectionAdapter, ReflectionAdapterError, ReflectionAdapterUninitialized, State,
@@ -14,6 +13,7 @@ use crate::reflection::{Column, Constraint, Database, DefaultValue, Index, SqlDa
 use serde_json::Value;
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::{MySql, Pool};
+use std::marker::PhantomData;
 
 #[derive(Clone, Debug)]
 pub struct MariadbInnodbReflectionAdapter<T: State<MySql>> {
@@ -27,13 +27,13 @@ impl MariadbInnodbReflectionAdapter<Uninitialized<MySql>> {
         MariadbInnodbReflectionAdapter::<Uninitialized<MySql>> {
             state: Uninitialized::new(),
             connection_string: connection_string.to_string(),
-            database_name: String::new()
+            database_name: String::new(),
         }
     }
 }
 
 impl ReflectionAdapterUninitialized<MySql>
-for MariadbInnodbReflectionAdapter<Uninitialized<MySql>>
+    for MariadbInnodbReflectionAdapter<Uninitialized<MySql>>
 {
     type ValidAdapter = MariadbInnodbReflectionAdapter<Connected<MySql>>;
 
@@ -69,9 +69,7 @@ impl MariadbInnodbReflectionAdapter<Connected<MySql>> {
     }
 }
 
-impl ReflectionAdapter<MySql>
-for MariadbInnodbReflectionAdapter<Connected<MySql>>
-{
+impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql>> {
     type InvalidAdapter = MariadbInnodbReflectionAdapter<Uninitialized<MySql>>;
 
     async fn disconnect(
