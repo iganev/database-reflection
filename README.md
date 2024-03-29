@@ -1,7 +1,7 @@
 [![Crates.io](https://img.shields.io/crates/v/database-reflection?color=4d76ae)](https://crates.io/crates/database-reflection)
 [![API](https://docs.rs/database-reflection/badge.svg)](https://docs.rs/database-reflection)
 [![dependency status](https://deps.rs/repo/github/iganev/database-reflection/status.svg)](https://deps.rs/repo/github/iganev/database-reflection)
-[![Build and Test](https://github.com/iganev/database-reflection/actions/workflows/rust.yml/badge.svg)](https://github.com/iganev/database-reflection/actions/workflows/rust.yml)
+[![build and test](https://github.com/iganev/database-reflection/actions/workflows/rust.yml/badge.svg)](https://github.com/iganev/database-reflection/actions/workflows/rust.yml)
 [![codecov](https://codecov.io/github/iganev/database-reflection/graph/badge.svg?token=B5P2TAV5BB)](https://codecov.io/github/iganev/database-reflection)
 
 # database-reflection
