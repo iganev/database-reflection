@@ -85,6 +85,7 @@ impl Database {
 
     /// Find a constraint by name
     pub fn constraint(&self, key: &str) -> Option<Arc<Constraint>> {
+        #[allow(clippy::unnecessary_to_owned)]
         self.constraints.get(&key.to_string()).cloned()
     }
 
