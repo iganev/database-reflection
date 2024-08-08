@@ -17,7 +17,6 @@ pub const METADATA_CASCADE: &str = "cascade";
 /// constraint action value SET NULL
 pub const METADATA_SET_NULL: &str = "set_null";
 
-
 /// for numerical datatypes of columns
 pub const METADATA_FLAG_UNSIGNED: &str = "unsigned";
 
@@ -26,6 +25,7 @@ pub const METADATA_FLAG_NULLABLE: &str = "nullable";
 
 /// for marking primary keys
 pub const METADATA_FLAG_PRIMARY: &str = "primary";
+
 /// for marking unique indexes
 pub const METADATA_FLAG_UNIQUE: &str = "unique";
 
