@@ -13,7 +13,51 @@ use crate::reflection::{Column, Constraint, Database, DefaultValue, Index, SqlDa
 use serde_json::Value;
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::{MySql, Pool};
-use std::marker::PhantomData;
+
+type TableComlumnsTuple = (
+    String,
+    String,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
+type TableIndexTuple = (
+    String,
+    bool,
+    String,
+    u32,
+    String,
+    String,
+    i32,
+    Option<String>,
+    Option<String>,
+    String,
+    String,
+    String,
+    String,
+    String,
+);
+
+type TableIndexTupleAlt = (
+    String,
+    bool,
+    String,
+    i32,
+    String,
+    String,
+    i32,
+    Option<String>,
+    Option<String>,
+    String,
+    String,
+    String,
+    String,
+    String,
+);
+
+type TableConstraintTuple = (String, String, String, Option<String>, Option<String>);
 
 #[derive(Clone, Debug)]
 pub struct MariadbInnodbReflectionAdapter<T: State<MySql>> {
@@ -48,7 +92,7 @@ impl ReflectionAdapterUninitialized<MySql>
             .max_connections(1)
             .connect(&self.connection_string)
             .await
-            .map_err(|e| ReflectionAdapterError::ConnectionError(e))?;
+            .map_err(ReflectionAdapterError::ConnectionError)?;
 
         let database_name: String = sqlx::query_scalar("SELECT DATABASE()")
             .fetch_one(&pool)
@@ -65,7 +109,7 @@ impl ReflectionAdapterUninitialized<MySql>
 
 impl MariadbInnodbReflectionAdapter<Connected<MySql>> {
     pub fn get_connection(&self) -> &Pool<MySql> {
-        &*self.state
+        &self.state
     }
 }
 
@@ -87,7 +131,7 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
         sqlx::query(format!("USE  {}", &database_name).as_str())
             .execute(&*self.state)
             .await
-            .map_err(|e| DatabaseError(e))?;
+            .map_err(DatabaseError)?;
 
         self.database_name = database_name.to_string();
 
@@ -102,14 +146,14 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
         sqlx::query_scalar("SHOW DATABASES")
             .fetch_all(self.get_connection())
             .await
-            .map_err(|e| DatabaseError(e))
+            .map_err(DatabaseError)
     }
 
     async fn list_table_names(&self) -> Result<Vec<String>, ReflectionAdapterError> {
         sqlx::query_scalar("SHOW TABLES")
             .fetch_all(self.get_connection())
             .await
-            .map_err(|e| DatabaseError(e))
+            .map_err(DatabaseError)
     }
 
     async fn get_table_reflection(
@@ -118,24 +162,29 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
     ) -> Result<Table, ReflectionAdapterError> {
         let mut table = Table::new(table_name);
 
-        let default_table_character_set_and_collation:(Option<String>, Option<String>) = sqlx::query_as(format!("SELECT CCSA.CHARACTER_SET_NAME, CCSA.COLLATION_NAME FROM information_schema.`TABLES` T, information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHERE CCSA.COLLATION_NAME = T.TABLE_COLLATION AND T.TABLE_SCHEMA = '{}' AND T.TABLE_NAME = '{}'", &self.database_name, table_name).as_str()).fetch_one(self.get_connection()).await.map_err(|e| DatabaseError(e))?;
+        let default_table_character_set_and_collation: (Option<String>, Option<String>) = sqlx::query_as(&format!(r#"
+            SELECT 
+                CCSA.CHARACTER_SET_NAME, 
+                CCSA.COLLATION_NAME 
+            FROM information_schema.`TABLES` T, information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA 
+            WHERE CCSA.COLLATION_NAME = T.TABLE_COLLATION 
+            AND T.TABLE_SCHEMA = '{}' 
+            AND T.TABLE_NAME = '{}'
+            "#, &self.database_name, table_name))
+            .fetch_one(self.get_connection())
+            .await
+            .map_err(DatabaseError)?;
         if let (Some(charset), Some(collation)) = default_table_character_set_and_collation {
             table
                 .set_meta(METADATA_CHARSET, charset)
                 .set_meta(METADATA_COLLATION, collation);
         }
 
-        let table_columns: Vec<(
-            String,
-            String,
-            String,
-            Option<String>,
-            Option<String>,
-            Option<String>,
-        )> = sqlx::query_as(format!("SHOW COLUMNS FROM {}", table_name).as_str())
-            .fetch_all(self.get_connection())
-            .await
-            .map_err(|e| DatabaseError(e))?;
+        let table_columns: Vec<TableComlumnsTuple> =
+            sqlx::query_as(format!("SHOW COLUMNS FROM {}", table_name).as_str())
+                .fetch_all(self.get_connection())
+                .await
+                .map_err(DatabaseError)?;
         for table_column in table_columns {
             let (field_name, field_type, field_nullable, field_key, field_default, field_extra) =
                 table_column;
@@ -149,7 +198,22 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
             if let SqlDatatype::Char(_) | SqlDatatype::Varchar(_) | SqlDatatype::Text(_) =
                 col.datatype()
             {
-                let default_column_character_set_and_collation:(Option<String>, Option<String>) = sqlx::query_as(format!("SELECT CHARACTER_SET_NAME, COLLATION_NAME FROM information_schema.`COLUMNS` WHERE table_schema = '{}' AND table_name = '{}' AND column_name = '{}'", &self.database_name, table_name, field_name.as_str()).as_str()).fetch_one(self.get_connection()).await.map_err(|e| DatabaseError(e))?;
+                let default_column_character_set_and_collation: (Option<String>, Option<String>) =
+                    sqlx::query_as(&format!(
+                        r#"
+                    SELECT 
+                        CHARACTER_SET_NAME, 
+                        COLLATION_NAME 
+                    FROM information_schema.`COLUMNS` 
+                    WHERE table_schema = '{}' 
+                    AND table_name = '{}' 
+                    AND column_name = '{}'
+                    "#,
+                        &self.database_name, table_name, &field_name
+                    ))
+                    .fetch_one(self.get_connection())
+                    .await
+                    .map_err(DatabaseError)?;
 
                 if let (Some(charset), Some(collation)) = default_column_character_set_and_collation
                 {
@@ -194,7 +258,7 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
             }
 
             if let Some(extra) = field_extra {
-                if extra.len() > 0 {
+                if !extra.is_empty() {
                     if extra.as_str() == METADATA_FLAG_AUTO_INCREMENT {
                         col.set_meta_flag(METADATA_FLAG_AUTO_INCREMENT);
                     } else if extra.as_str() == METADATA_FLAG_ON_UPDATE_CURRENT_TIMESTAMP {
@@ -207,25 +271,42 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
         }
 
         //Table 	Non_unique 	Key_name 	Seq_in_index 	Column_name 	Collation 	Cardinality 	Sub_part 	Packed 	Null 	Index_type 	Comment 	Index_comment 	Ignored
-        let table_indexes: Vec<(
-            String,
-            bool,
-            String,
-            i32,
-            String,
-            String,
-            i32,
-            Option<String>,
-            Option<String>,
-            String,
-            String,
-            String,
-            String,
-            String,
-        )> = sqlx::query_as(format!("SHOW INDEXES FROM {}", table_name).as_str())
-            .fetch_all(self.get_connection())
-            .await
-            .map_err(|e| DatabaseError(e))?;
+        let table_indexes: Vec<TableIndexTuple> = if let Ok(table_indexes) =
+            sqlx::query_as(format!("SHOW INDEXES FROM {}", table_name).as_str())
+                .fetch_all(self.get_connection())
+                .await
+                .map_err(DatabaseError)
+        {
+            table_indexes
+        } else {
+            let table_indexes: Vec<TableIndexTupleAlt> =
+                sqlx::query_as(format!("SHOW INDEXES FROM {}", table_name).as_str())
+                    .fetch_all(self.get_connection())
+                    .await
+                    .map_err(DatabaseError)?;
+
+            table_indexes
+                .into_iter()
+                .map(|row| {
+                    (
+                        row.0,
+                        row.1,
+                        row.2,
+                        row.3 as u32,
+                        row.4,
+                        row.5,
+                        row.6,
+                        row.7,
+                        row.8,
+                        row.9,
+                        row.10,
+                        row.11,
+                        row.12,
+                        row.13,
+                    )
+                })
+                .collect()
+        };
 
         for table_index in table_indexes {
             let (
@@ -271,10 +352,9 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
         // SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'exams';
 
         // collect constraints
-        let foreign_keys: Vec<(String, String, String, Option<String>, Option<String>)> =
-            sqlx::query_as(
-                format!(
-                    r#"
+        let foreign_keys: Vec<TableConstraintTuple> = sqlx::query_as(
+            format!(
+                r#"
         SELECT
           CONSTRAINT_NAME, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
         FROM
@@ -285,13 +365,13 @@ impl ReflectionAdapter<MySql> for MariadbInnodbReflectionAdapter<Connected<MySql
           REFERENCED_TABLE_SCHEMA = TABLE_SCHEMA
         ORDER BY CONSTRAINT_NAME ASC, POSITION_IN_UNIQUE_CONSTRAINT ASC
         "#,
-                    &self.database_name
-                )
-                .as_str(),
+                &self.database_name
             )
-            .fetch_all(self.get_connection())
-            .await
-            .map_err(|e| DatabaseError(e))?;
+            .as_str(),
+        )
+        .fetch_all(self.get_connection())
+        .await
+        .map_err(DatabaseError)?;
 
         for foreign_key in foreign_keys {
             let (
